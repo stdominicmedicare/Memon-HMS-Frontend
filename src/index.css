@@ -1,0 +1,83 @@
+/**
+ * Global theme tokens – single source of truth.
+ * All components MUST use these; no hardcoded colors/fonts.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary – teal (MediCare reference) */
+    --color-primary: #0d9488;
+    --color-primary-light: #14b8a6;
+    --color-primary-dark: #0f766e;
+    /* Header & footer – dark teal */
+    --color-header-footer: #0f766e;
+    /* CTA button – brighter teal on dark header */
+    --color-cta: #2dd4bf;
+
+    /* Secondary */
+    --color-secondary: #64748b;
+    --color-secondary-light: #94a3b8;
+    --color-secondary-dark: #475569;
+
+    /* Accent */
+    --color-accent: #0d9488;
+
+    /* Semantic */
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+
+    /* Backgrounds – light gray / mint tint for dashboard */
+    --color-bg-light: #f0fdfa;
+    --color-bg-dark: #0f172a;
+    --color-bg-gradient-start: #f0fdfa;
+    --color-bg-gradient-end: #ffffff;
+
+    /* Surface (cards, modals) */
+    --color-surface: #ffffff;
+    --color-surface-muted: #f1f5f9;
+
+    /* Text */
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #64748b;
+
+    /* Border */
+    --color-border: #e2e8f0;
+    --color-border-light: #f1f5f9;
+
+    /* Card icon pastels (reference) */
+    --color-icon-blue: #e0f2fe;
+    --color-icon-purple: #f3e8ff;
+    --color-icon-teal: #ccfbf1;
+    --color-icon-orange: #ffedd5;
+    --color-icon-green: #dcfce7;
+    --color-icon-pink: #fce7f3;
+    --color-icon-indigo: #e0e7ff;
+
+    /* Typography */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Radius */
+    --radius-card: 0.75rem;
+    --radius-button: 0.5rem;
+    --radius-input: 0.5rem;
+
+    /* Shadows – card lift on hover */
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+    --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+    --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    /* Spacing */
+    --spacing-layout: 1.5rem;
+    --spacing-card: 1.25rem;
+  }
+
+  body {
+    @apply bg-background-light text-text-primary antialiased;
+    font-family: var(--font-sans);
+  }
+}
