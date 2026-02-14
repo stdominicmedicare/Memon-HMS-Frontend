@@ -25,10 +25,12 @@ export default function MobileNav() {
 
   const pharmacyNav = [{ to: '/pharmacy', label: 'Home', icon: Pill }];
   const bloodBankNav = [{ to: '/bloodbank', label: 'Home', icon: Droplets }];
+  const volunteerNav = [{ to: '/volunteer', label: 'Home', icon: Droplets }];
   const items = role === 'Admin' ? adminNav
     : role === 'ICU' ? icuNav
     : role === 'Pharmacy' ? pharmacyNav
     : role === 'BloodBank' || role === 'Blood Bank' ? bloodBankNav
+    : role === 'Volunteer' ? volunteerNav
     : [{ to: getHomePath(role), label: 'Home', icon: LayoutDashboard }];
 
   function getHomePath(r) {
@@ -38,6 +40,7 @@ export default function MobileNav() {
     if (r === 'ICU') return '/icu';
     if (r === 'Pharmacy') return '/pharmacy';
     if (r === 'BloodBank' || r === 'Blood Bank') return '/bloodbank';
+    if (r === 'Volunteer') return '/volunteer';
     return '/';
   }
 

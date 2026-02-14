@@ -5,3 +5,4 @@ export { default as DoctorManagement } from './DoctorManagement';
 export { default as AmbulanceManagement } from './AmbulanceManagement';
 export { default as FleetView } from './FleetView';
 export { default as ICUManagement } from './ICUManagement';
+export { default as VolunteerManagement } from './VolunteerManagement';

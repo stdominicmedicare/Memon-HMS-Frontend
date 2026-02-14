@@ -8,6 +8,7 @@ export const ROLES = {
   ICU: 'ICU',
   Pharmacy: 'Pharmacy',
   BloodBank: 'BloodBank',
+  Volunteer: 'Volunteer',
 };
 
 export const ROLE_ROUTES = {
@@ -19,8 +20,12 @@ export const ROLE_ROUTES = {
   [ROLES.Pharmacy]: '/pharmacy',
   [ROLES.BloodBank]: '/bloodbank',
   'Blood Bank': '/bloodbank', // allow DB value with space
+  [ROLES.Volunteer]: '/volunteer',
   [ROLES.GeneralUser]: '/dashboard',
 };
+
+/** Blood groups for donors/volunteers/blood bank. */
+export const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
 /** Hospital locations for patient map (awareness mode). */
 export const PATIENT_MAP_HOSPITALS = [

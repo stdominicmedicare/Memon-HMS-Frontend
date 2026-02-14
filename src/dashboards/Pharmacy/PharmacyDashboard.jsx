@@ -174,7 +174,7 @@ export default function PharmacyDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-text-primary">Pharmacy Management Panel</h1>
+      <h1 className="text-xl font-bold text-text-primary sm:text-2xl">Pharmacy Management Panel</h1>
 
       {/* KPI cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -185,16 +185,17 @@ export default function PharmacyDashboard() {
       </div>
 
       {/* Tabs */}
-      <nav className="flex gap-4 border-b border-border">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 border-b-2 py-3 text-sm font-medium transition-colors ${
-              activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'
-            }`}
-          >
+      <div className="border-b border-border">
+        <nav className="flex gap-2 overflow-x-auto sm:gap-4" aria-label="Pharmacy sections">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`shrink-0 flex items-center gap-2 border-b-2 py-3 text-sm font-medium transition-colors touch-manipulation ${
+                activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'
+              }`}
+            >
             <tab.icon className="h-4 w-4" />
             {tab.label}
             {tab.badge != null && tab.badge > 0 && (
@@ -202,7 +203,8 @@ export default function PharmacyDashboard() {
             )}
           </button>
         ))}
-      </nav>
+        </nav>
+      </div>
 
       {/* Medicine Inventory */}
       {activeTab === TAB_INVENTORY && (

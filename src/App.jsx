@@ -10,13 +10,14 @@ import { AppLayout } from './components/layout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Unauthorized from './pages/Unauthorized';
-import { AdminHome, UserManagement, RoleAssignment, DoctorManagement, AmbulanceManagement, FleetView, ICUManagement } from './dashboards/Admin';
+import { AdminHome, UserManagement, RoleAssignment, DoctorManagement, AmbulanceManagement, FleetView, ICUManagement, VolunteerManagement } from './dashboards/Admin';
 import { PatientDashboard } from './dashboards/Patient';
 import { DoctorDashboard } from './dashboards/Doctor';
 import { AmbulanceDashboard } from './dashboards/Ambulance';
 import { ICUDashboard, AdmissionRequests, PatientMonitoring, ICUHistory } from './dashboards/ICU';
 import { PharmacyDashboard } from './dashboards/Pharmacy';
 import { BloodBankDashboard } from './dashboards/BloodBank';
+import { VolunteerDashboard } from './dashboards/Volunteer';
 import TestMap from './components/map/TestMap';
 
 function GeneralUserShell() {
@@ -163,6 +164,18 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/volunteers"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin']}>
+                  <AppLayout>
+                    <VolunteerManagement />
+                  </AppLayout>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/patient"
@@ -267,6 +280,18 @@ export default function App() {
                 <RoleGuard allowedRoles={['BloodBank', 'Blood Bank', 'Admin']}>
                   <AppLayout>
                     <BloodBankDashboard />
+                  </AppLayout>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/volunteer"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Volunteer']}>
+                  <AppLayout>
+                    <VolunteerDashboard />
                   </AppLayout>
                 </RoleGuard>
               </ProtectedRoute>

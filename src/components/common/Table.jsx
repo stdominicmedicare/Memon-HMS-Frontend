@@ -31,7 +31,7 @@ export function Th({ children, className = '' }) {
   return (
     <th
       scope="col"
-      className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary ${className}`.trim()}
+      className={`whitespace-nowrap px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-secondary md:px-4 md:py-3 ${className}`.trim()}
     >
       {children}
     </th>
@@ -40,7 +40,7 @@ export function Th({ children, className = '' }) {
 
 export function Td({ children, className = '' }) {
   return (
-    <td className={`px-4 py-3 text-sm text-text-primary ${className}`.trim()}>
+    <td className={`px-3 py-2.5 text-sm text-text-primary md:px-4 md:py-3 ${className}`.trim()}>
       {children}
     </td>
   );

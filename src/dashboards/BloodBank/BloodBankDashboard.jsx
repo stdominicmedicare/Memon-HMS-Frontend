@@ -23,6 +23,11 @@ import {
   useBloodBankRejectRequest,
   useBloodBankAllocateRequest,
   useBloodBankCreateUnit,
+  useBloodBankDonationRequests,
+  useBloodBankCreateDonationRequest,
+  useBloodBankUpdateDonationRequest,
+  useBloodBankDonationRequestPledges,
+  useBloodBankCompletePledge,
 } from '../../hooks/useBloodBankApi';
 import {
   Droplets,
@@ -40,6 +45,7 @@ import {
 const TAB_INVENTORY = 'inventory';
 const TAB_DONATIONS = 'donations';
 const TAB_REQUESTS = 'requests';
+const TAB_VOLUNTEER_REQUESTS = 'volunteer-requests';
 const TAB_DONORS = 'donors';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
@@ -67,6 +73,35 @@ function StatCard({ icon: Icon, label, value, borderColor, iconBg }) {
 function formatDate(iso) {
   if (!iso) return '–';
   return new Date(iso).toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}
+
+function PledgesList({ requestId, onComplete, completing }) {
+  const { data: pledges = [], isLoading } = useBloodBankDonationRequestPledges(requestId);
+  if (isLoading) return <p className="text-sm text-text-muted">Loading pledges…</p>;
+  if (pledges.length === 0) return <p className="text-sm text-text-muted">No pledges yet.</p>;
+  return (
+    <div className="mt-2 rounded-lg border border-border bg-surface-muted/30 p-3">
+      <p className="mb-2 text-sm font-medium text-text-primary">Volunteers who accepted</p>
+      <ul className="space-y-2">
+        {pledges.map((p) => (
+          <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <span className="text-text-primary">{p.volunteer?.full_name || p.volunteer?.email || 'Volunteer'}</span>
+            <Badge variant={p.status === 'completed' ? 'success' : 'warning'}>{p.status}</Badge>
+            {p.status === 'pending' && (
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => onComplete(p.id, '')}
+                disabled={completing}
+              >
+                Mark completed
+              </Button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export default function BloodBankDashboard() {
@@ -164,16 +199,18 @@ export default function BloodBankDashboard() {
     });
   };
 
+  const openDonationRequests = donationRequests.filter((r) => r.status === 'open');
   const tabs = [
     { id: TAB_INVENTORY, label: 'Blood Inventory', icon: Droplets },
     { id: TAB_DONATIONS, label: 'Donations & Testing', icon: HeartHandshake, badge: pendingTests },
     { id: TAB_REQUESTS, label: 'Blood Requests', icon: FileText, badge: pendingRequestsCount },
+    { id: TAB_VOLUNTEER_REQUESTS, label: 'Volunteer Requests', icon: Users, badge: openDonationRequests.length },
     { id: TAB_DONORS, label: 'Donor Management', icon: Users },
   ];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-text-primary">Blood Bank Management Dashboard</h1>
+      <h1 className="text-xl font-bold text-text-primary sm:text-2xl">Blood Bank Management Dashboard</h1>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -385,6 +422,114 @@ export default function BloodBankDashboard() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Volunteer donation requests (for volunteers to accept) */}
+      {activeTab === TAB_VOLUNTEER_REQUESTS && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-text-primary">Donation Requests for Volunteers</h2>
+            <Button variant="primary" onClick={() => setCreateDonationRequestOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Create Request
+            </Button>
+          </div>
+          <p className="text-sm text-text-secondary">
+            Create open requests (e.g. &quot;O+ needed&quot;) so volunteers can see and accept them. When a volunteer donates, mark their pledge as completed.
+          </p>
+          {donationRequestsLoading ? (
+            <Card><p className="text-text-muted py-4">Loading…</p></Card>
+          ) : donationRequests.length === 0 ? (
+            <Card><p className="text-text-muted py-8 text-center">No donation requests yet. Create one to notify volunteers.</p></Card>
+          ) : (
+            <div className="space-y-3">
+              {donationRequests.map((req) => (
+                <Card key={req.id} className="space-y-2" hover={false}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span className="font-semibold text-text-primary">{req.blood_group} – {req.quantity_required} unit(s)</span>
+                      {req.location && <span className="ml-2 text-sm text-text-secondary">@ {req.location}</span>}
+                      <Badge variant={req.urgency === 'High' ? 'error' : 'warning'} className="ml-2">{req.urgency}</Badge>
+                      <Badge variant={req.status === 'open' ? 'success' : 'default'} className="ml-1">{req.status}</Badge>
+                    </div>
+                    {req.status === 'open' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateDonationRequest.mutate({ id: req.id, status: 'closed' }, { onSuccess: () => showToast('Request closed'), onError })}
+                        disabled={updateDonationRequest.isPending}
+                      >
+                        Close request
+                      </Button>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-primary hover:underline"
+                    onClick={() => setExpandedPledgesId(expandedPledgesId === req.id ? null : req.id)}
+                  >
+                    {expandedPledgesId === req.id ? 'Hide pledges' : 'View pledges'}
+                  </button>
+                  {expandedPledgesId === req.id && (
+                    <PledgesList
+                      requestId={req.id}
+                      onComplete={(pledgeId, notes) => completePledge.mutate({ pledgeId, notes }, { onSuccess: () => showToast('Marked completed. Thank you!'), onError })}
+                      completing={completePledge.isPending}
+                    />
+                  )}
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <Modal open={createDonationRequestOpen} onClose={() => setCreateDonationRequestOpen(false)} title="Create Donation Request">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                createDonationRequest.mutate(donationRequestForm, {
+                  onSuccess: () => {
+                    showToast('Request created. Volunteers will see it.');
+                    setCreateDonationRequestOpen(false);
+                    setDonationRequestForm({ blood_group: 'O+', quantity_required: 1, location: '', urgency: 'High' });
+                  },
+                  onError,
+                });
+              }}
+              className="space-y-4"
+            >
+              <Select
+                label="Blood group"
+                options={BLOOD_GROUPS.map((bg) => ({ value: bg, label: bg }))}
+                value={donationRequestForm.blood_group}
+                onChange={(e) => setDonationRequestForm((f) => ({ ...f, blood_group: e.target.value }))}
+              />
+              <Input
+                label="Quantity (units)"
+                type="number"
+                min={1}
+                value={donationRequestForm.quantity_required}
+                onChange={(e) => setDonationRequestForm((f) => ({ ...f, quantity_required: parseInt(e.target.value, 10) || 1 }))}
+              />
+              <Input
+                label="Location (e.g. hospital name)"
+                value={donationRequestForm.location}
+                onChange={(e) => setDonationRequestForm((f) => ({ ...f, location: e.target.value }))}
+                placeholder="Jinnah Hospital"
+              />
+              <Select
+                label="Urgency"
+                options={[{ value: 'High', label: 'High' }, { value: 'Medium', label: 'Medium' }, { value: 'Low', label: 'Low' }]}
+                value={donationRequestForm.urgency}
+                onChange={(e) => setDonationRequestForm((f) => ({ ...f, urgency: e.target.value }))}
+              />
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setCreateDonationRequestOpen(false)}>Cancel</Button>
+                <Button type="submit" variant="primary" disabled={createDonationRequest.isPending}>
+                  {createDonationRequest.isPending ? 'Creating…' : 'Create Request'}
+                </Button>
+              </div>
+            </form>
+          </Modal>
         </div>
       )}
 

@@ -218,3 +218,45 @@ export function useBloodBankAvailability() {
     queryFn: () => apiGet(`${base}/availability`),
   });
 }
+
+/** Donation requests (for volunteers to accept). */
+export function useBloodBankDonationRequests(status = '') {
+  return useQuery({
+    queryKey: ['bloodbank', 'donation-requests', status],
+    queryFn: () => apiGet(`${base}/donation-requests${status ? `?status=${encodeURIComponent(status)}` : ''}`),
+  });
+}
+
+export function useBloodBankCreateDonationRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body) => apiPost(`${base}/donation-requests`, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['bloodbank', 'donation-requests'] }),
+  });
+}
+
+export function useBloodBankUpdateDonationRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }) => apiPatch(`${base}/donation-requests/${id}`, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['bloodbank', 'donation-requests'] }),
+  });
+}
+
+export function useBloodBankDonationRequestPledges(requestId) {
+  return useQuery({
+    queryKey: ['bloodbank', 'donation-requests', requestId, 'pledges'],
+    queryFn: () => apiGet(`${base}/donation-requests/${requestId}/pledges`),
+    enabled: !!requestId,
+  });
+}
+
+export function useBloodBankCompletePledge() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ pledgeId, notes }) => apiPatch(`${base}/donation-pledges/${pledgeId}/complete`, { notes }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['bloodbank', 'donation-requests'] });
+    },
+  });
+}

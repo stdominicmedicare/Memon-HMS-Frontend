@@ -20,6 +20,7 @@ function getPortalTitle(role, pathname) {
   if (role === 'ICU') return 'ICU Management Dashboard';
   if (role === 'Pharmacy') return 'Pharmacy Management Panel';
   if (role === 'BloodBank' || role === 'Blood Bank') return 'Blood Bank Management Dashboard';
+  if (role === 'Volunteer') return 'Blood Donation Volunteer';
   return null;
 }
 
@@ -53,7 +54,7 @@ export default function Header({ onMenuClick }) {
         >
           <Menu className="h-6 w-6" />
         </button>
-        <NavLink to={role === 'Admin' && (location.pathname.startsWith('/admin/pharmacy') || location.pathname.startsWith('/admin/bloodbank')) ? (location.pathname.startsWith('/admin/bloodbank') ? '/admin/bloodbank' : '/admin/pharmacy') : (role === 'Blood Bank' ? '/bloodbank' : getHomePath(role))} className="flex items-center gap-2">
+        <NavLink to={role === 'Admin' && (location.pathname.startsWith('/admin/pharmacy') || location.pathname.startsWith('/admin/bloodbank')) ? (location.pathname.startsWith('/admin/bloodbank') ? '/admin/bloodbank' : '/admin/pharmacy') : (role === 'Blood Bank' ? '/bloodbank' : role === 'Volunteer' ? '/volunteer' : getHomePath(role))} className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
             {portalTitle ? (
               <Building2 className="h-5 w-5 text-white" />
@@ -102,6 +103,9 @@ export default function Header({ onMenuClick }) {
             <NavLink to="/admin/bloodbank" className={navLinkClass}>
               Blood Bank
             </NavLink>
+            <NavLink to="/admin/volunteers" className={navLinkClass}>
+              Volunteers
+            </NavLink>
             <NavLink to="/admin/roles" className={navLinkClass}>
               Role Assignment
             </NavLink>
@@ -138,10 +142,11 @@ export default function Header({ onMenuClick }) {
         <button
           type="button"
           onClick={handleSignOut}
-          className="inline-flex items-center gap-2 rounded-button bg-cta px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-95 active:scale-[0.98] touch-manipulation"
+          className="inline-flex items-center gap-2 rounded-button bg-cta px-3 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-95 active:scale-[0.98] touch-manipulation sm:px-4"
+          aria-label="Sign out"
         >
-          <LogOut className="h-4 w-4" />
-          Sign Out
+          <LogOut className="h-4 w-4 shrink-0" />
+          <span className="hidden sm:inline">Sign Out</span>
         </button>
       </div>
     </header>

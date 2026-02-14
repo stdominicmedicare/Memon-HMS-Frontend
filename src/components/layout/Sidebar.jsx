@@ -5,7 +5,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../auth/AuthContext';
 import { ROLE_LABELS } from '../../utils/constants';
-import { LayoutDashboard, Users, Shield, Stethoscope, Ambulance, Bed, FileText, Activity, History, Pill, Droplets, MapPin } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, Stethoscope, Ambulance, Bed, FileText, Activity, History, Pill, Droplets, MapPin, Heart } from 'lucide-react';
 
 const adminLinks = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,6 +16,7 @@ const adminLinks = [
   { to: '/admin/icu', label: 'ICU Management', icon: Bed },
   { to: '/admin/pharmacy', label: 'Pharmacy', icon: Pill },
   { to: '/admin/bloodbank', label: 'Blood Bank', icon: Droplets },
+  { to: '/admin/volunteers', label: 'Volunteers', icon: Heart },
   { to: '/admin/roles', label: 'Role Assignment', icon: Shield },
 ];
 
@@ -32,6 +33,7 @@ const icuLinks = [
 
 const pharmacyLinks = [{ to: '/pharmacy', label: 'Dashboard', icon: Pill }];
 const bloodBankLinks = [{ to: '/bloodbank', label: 'Dashboard', icon: Droplets }];
+const volunteerLinks = [{ to: '/volunteer', label: 'Dashboard', icon: Droplets }];
 const generalUserLinks = [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }];
 
 function getLinksForRole(role) {
@@ -43,6 +45,7 @@ function getLinksForRole(role) {
   if (r === 'ICU') return icuLinks;
   if (r === 'Pharmacy') return pharmacyLinks;
   if (r === 'BloodBank') return bloodBankLinks;
+  if (r === 'Volunteer') return volunteerLinks;
   if (r === 'GeneralUser') return generalUserLinks;
   return [{ to: '/dashboard', label: 'Home', icon: LayoutDashboard }];
 }

@@ -47,7 +47,7 @@ export default function Login() {
           <div className="rounded-full bg-primary p-4 text-white mb-4">
             <Building2 className="h-10 w-10" />
           </div>
-          <h1 className="text-xl font-bold text-text-primary">
+          <h1 className="text-xl font-bold text-text-primary sm:text-2xl">
             Hospital Management System
           </h1>
           <p className="text-sm text-text-secondary mt-1">

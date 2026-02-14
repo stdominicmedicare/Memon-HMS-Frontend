@@ -16,7 +16,7 @@ export default function AppLayout({ children }) {
       <div className="flex flex-1 flex-col">
         <div className="flex flex-1">
           <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-          <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6 lg:p-8">
+          <main className="min-w-0 flex-1 p-4 pb-24 md:p-6 md:pb-6 lg:p-8">
             {children}
           </main>
         </div>
