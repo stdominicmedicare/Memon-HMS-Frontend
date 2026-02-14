@@ -10,13 +10,14 @@ import { AppLayout } from './components/layout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Unauthorized from './pages/Unauthorized';
-import { AdminHome, UserManagement, RoleAssignment, DoctorManagement, AmbulanceManagement, ICUManagement } from './dashboards/Admin';
+import { AdminHome, UserManagement, RoleAssignment, DoctorManagement, AmbulanceManagement, FleetView, ICUManagement } from './dashboards/Admin';
 import { PatientDashboard } from './dashboards/Patient';
 import { DoctorDashboard } from './dashboards/Doctor';
 import { AmbulanceDashboard } from './dashboards/Ambulance';
 import { ICUDashboard, AdmissionRequests, PatientMonitoring, ICUHistory } from './dashboards/ICU';
 import { PharmacyDashboard } from './dashboards/Pharmacy';
 import { BloodBankDashboard } from './dashboards/BloodBank';
+import TestMap from './components/map/TestMap';
 
 function GeneralUserShell() {
   return (
@@ -40,6 +41,19 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route
+            path="/map-test"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <div className="space-y-4">
+                    <h1 className="text-2xl font-bold text-text-primary">Map Test (Phase 1)</h1>
+                    <TestMap />
+                  </div>
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/admin"
@@ -96,6 +110,18 @@ export default function App() {
                 <RoleGuard allowedRoles={['Admin']}>
                   <AppLayout>
                     <AmbulanceManagement />
+                  </AppLayout>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/fleet"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin']}>
+                  <AppLayout>
+                    <FleetView />
                   </AppLayout>
                 </RoleGuard>
               </ProtectedRoute>

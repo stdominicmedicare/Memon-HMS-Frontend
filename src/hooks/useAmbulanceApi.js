@@ -6,6 +6,7 @@ import { apiGet, apiPatch, apiPost } from '../services/api';
 
 const keys = {
   dashboard: ['ambulance', 'dashboard'],
+  fleetView: ['ambulance', 'fleet-view'],
 };
 
 export function useAmbulanceDashboard() {
@@ -13,6 +14,15 @@ export function useAmbulanceDashboard() {
     queryKey: keys.dashboard,
     queryFn: () => apiGet('/api/ambulance/dashboard'),
     refetchOnWindowFocus: true,
+  });
+}
+
+/** Fleet view for driver: all ambulances + positions, myAmbulanceId, stats. */
+export function useAmbulanceFleetView() {
+  return useQuery({
+    queryKey: keys.fleetView,
+    queryFn: () => apiGet('/api/ambulance/fleet-view'),
+    refetchInterval: 15 * 1000,
   });
 }
 
@@ -28,7 +38,10 @@ export function useAcceptTrip() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id) => apiPost(`/api/ambulance/requests/${id}/accept`, {}),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.dashboard }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.dashboard });
+      queryClient.invalidateQueries({ queryKey: keys.fleetView });
+    },
   });
 }
 
@@ -64,10 +77,21 @@ export function usePatientPickedTrip() {
   });
 }
 
+export function useArrivedAtHospitalTrip() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => apiPatch(`/api/ambulance/requests/${id}/arrived-at-hospital`, {}),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.dashboard }),
+  });
+}
+
 export function useCompleteTrip() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, trip_notes }) => apiPatch(`/api/ambulance/requests/${id}/complete`, { trip_notes }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.dashboard }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.dashboard });
+      queryClient.invalidateQueries({ queryKey: keys.fleetView });
+    },
   });
 }

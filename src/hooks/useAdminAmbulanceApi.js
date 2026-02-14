@@ -8,6 +8,7 @@ const keys = {
   ambulances: ['admin', 'ambulances'],
   ambulanceRequests: ['admin', 'ambulance-requests'],
   ambulanceDrivers: ['admin', 'ambulance-drivers'],
+  fleetStatus: ['admin', 'fleet-status'],
 };
 
 export function useAdminAmbulances() {
@@ -43,7 +44,10 @@ export function useUpdateAmbulance() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, body }) => apiPatch(`/api/admin/ambulances/${id}`, body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.ambulances }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.ambulances });
+      queryClient.invalidateQueries({ queryKey: keys.fleetStatus });
+    },
   });
 }
 
@@ -63,6 +67,17 @@ export function useAssignAmbulanceRequest() {
   return useMutation({
     mutationFn: ({ id, ambulance_id, assigned_driver_id }) =>
       apiPatch(`/api/admin/ambulance-requests/${id}/assign`, { ambulance_id, assigned_driver_id }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.ambulanceRequests }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.ambulanceRequests });
+      queryClient.invalidateQueries({ queryKey: keys.fleetStatus });
+    },
+  });
+}
+
+export function useFleetStatus() {
+  return useQuery({
+    queryKey: keys.fleetStatus,
+    queryFn: () => apiGet('/api/admin/fleet-status'),
+    refetchInterval: 30 * 1000,
   });
 }

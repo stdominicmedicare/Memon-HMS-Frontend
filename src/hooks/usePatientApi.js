@@ -66,11 +66,31 @@ export function usePatientAmbulanceRequests() {
   });
 }
 
+export function usePatientActiveTrip() {
+  return useQuery({
+    queryKey: ['patient', 'ambulance-requests', 'active'],
+    queryFn: () => apiGet('/api/patient/ambulance-requests/active'),
+    refetchInterval: (data) => (data ? 30 * 1000 : false),
+  });
+}
+
+/** Ambulance availability for patient map (nearby ambulances: status + position). */
+export function usePatientAmbulanceAvailability() {
+  return useQuery({
+    queryKey: ['patient', 'ambulance-availability'],
+    queryFn: () => apiGet('/api/patient/ambulance-availability'),
+    refetchInterval: 60 * 1000,
+  });
+}
+
 export function useCreateAmbulanceRequest() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body) => apiPost('/api/patient/ambulance-requests', body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.ambulanceRequests }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.ambulanceRequests });
+      queryClient.invalidateQueries({ queryKey: ['patient', 'ambulance-requests', 'active'] });
+    },
   });
 }
 
@@ -92,7 +112,10 @@ export function useCancelAmbulanceRequest() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id) => apiPatch(`/api/patient/ambulance-requests/${id}/cancel`, {}),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.ambulanceRequests }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.ambulanceRequests });
+      queryClient.invalidateQueries({ queryKey: ['patient', 'ambulance-requests', 'active'] });
+    },
   });
 }
 

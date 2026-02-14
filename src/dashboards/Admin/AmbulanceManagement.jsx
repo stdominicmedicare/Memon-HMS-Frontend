@@ -1,5 +1,6 @@
 /**
  * Admin – Ambulance Management. CRUD ambulances, view and assign ambulance requests.
+ * Live Fleet Map shown at top so admin can monitor all ambulances from this tab.
  */
 import { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, Input, Select } from '../../components/common';
@@ -12,7 +13,10 @@ import {
   useDeleteAmbulance,
   useAssignAmbulanceRequest,
 } from '../../hooks/useAdminAmbulanceApi';
-import { Plus } from 'lucide-react';
+import { useFleetTracking } from '../../features/admin/hooks/useFleetTracking';
+import FleetTrackingMap from '../../features/admin/components/FleetTrackingMap';
+import FleetTripDetailModal from '../../features/admin/components/FleetTripDetailModal';
+import { Plus, MapPin } from 'lucide-react';
 
 const STATUS_OPTIONS = [
   { value: 'Available', label: 'Available' },
@@ -45,7 +49,9 @@ export default function AmbulanceManagement() {
   const [form, setForm] = useState(initialForm);
   const [assignForm, setAssignForm] = useState({ ambulance_id: '', assigned_driver_id: '' });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
 
+  const { vehicles, stats: fleetStats, isLoading: fleetLoading, refetch: refetchFleet } = useFleetTracking();
   const { data: ambulances = [], isLoading: ambulancesLoading } = useAdminAmbulances();
   const { data: requests = [], isLoading: requestsLoading } = useAdminAmbulanceRequests();
   const { data: drivers = [] } = useAdminAmbulanceDrivers();
@@ -171,6 +177,40 @@ export default function AmbulanceManagement() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-text-primary">Ambulance Management</h1>
+
+      {/* Live Fleet Map – same as dashboard, always visible on Ambulance tab */}
+      <Card hover={false} className="overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2 sm:px-4">
+          <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            Live Fleet Map
+          </h2>
+          <button
+            type="button"
+            onClick={() => refetchFleet()}
+            className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-muted"
+          >
+            Refresh
+          </button>
+        </div>
+        {fleetLoading ? (
+          <div className="flex h-[42vh] min-h-[280px] items-center justify-center bg-surface-muted">
+            <p className="text-text-muted">Loading fleet…</p>
+          </div>
+        ) : (
+          <FleetTrackingMap
+            vehicles={vehicles}
+            stats={fleetStats}
+            onVehicleClick={setSelectedVehicle}
+            className="h-[42vh] min-h-[280px] w-full border-0"
+          />
+        )}
+      </Card>
+      <FleetTripDetailModal
+        open={!!selectedVehicle}
+        onClose={() => setSelectedVehicle(null)}
+        vehicle={selectedVehicle}
+      />
 
       <Card hover={false}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

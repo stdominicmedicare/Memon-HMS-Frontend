@@ -72,6 +72,14 @@ export function useDoctorIcuRequests() {
   });
 }
 
+export function useDoctorTransferTrips() {
+  return useQuery({
+    queryKey: ['doctor', 'transfer-trips'],
+    queryFn: () => apiGet('/api/doctor/transfer-trips'),
+    refetchInterval: 30 * 1000,
+  });
+}
+
 export function useDoctorIcuMonitoring(patientId) {
   return useQuery({
     queryKey: ['doctor', 'icu-monitoring', patientId],

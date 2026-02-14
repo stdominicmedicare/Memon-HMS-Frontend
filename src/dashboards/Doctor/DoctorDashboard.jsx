@@ -26,7 +26,9 @@ import {
   useCreateBloodRequest,
 } from '../../hooks/useDoctorApi';
 import { useBloodBankAvailability } from '../../hooks/useBloodBankApi';
-import { Users, Calendar, FileText, Pill, Ambulance, User as UserIcon, Send, Eye, Droplets } from 'lucide-react';
+import { useDoctorTracking } from '../../features/doctor/hooks/useDoctorTracking';
+import TransferTrackingPreview from '../../features/doctor/components/TransferTrackingPreview';
+import { Users, Calendar, FileText, Pill, Ambulance, User as UserIcon, Send, Eye, Droplets, MapPin } from 'lucide-react';
 
 function formatDate(iso) {
   if (!iso) return '–';
@@ -69,6 +71,7 @@ export default function DoctorDashboard() {
   const { data: icuMonitoringLogs = [] } = useDoctorIcuMonitoring(icuMonitoringPatient?.patient_id || null);
   const { data: bloodAvailability = {} } = useBloodBankAvailability();
   const createBloodRequestMutation = useCreateBloodRequest();
+  const { trips: transferTrips, locationsByTripId, statusByTripId } = useDoctorTracking();
 
   useEffect(() => {
     if (!toast.show) return;
@@ -426,6 +429,29 @@ export default function DoctorDashboard() {
       {activeSection === 'ambulance' && (
         <div className="space-y-6">
           <h2 className="text-lg font-bold text-text-primary">ICU & Ambulance</h2>
+
+          {/* My Transfers – active ambulance trips for patients I requested ICU for */}
+          {transferTrips.length > 0 && (
+            <Card>
+              <h3 className="font-semibold text-text-primary flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                My Transfers
+              </h3>
+              <p className="mt-1 text-sm text-text-secondary">
+                Patients you requested for ICU who are currently in an ambulance. Live status and ETA.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {transferTrips.map((trip) => (
+                  <TransferTrackingPreview
+                    key={trip.id}
+                    trip={trip}
+                    ambulanceLocation={locationsByTripId[trip.id]}
+                    tripStatus={statusByTripId[trip.id] ?? trip.status}
+                  />
+                ))}
+              </div>
+            </Card>
+          )}
 
           {/* Request ICU Transfer */}
           <Card>

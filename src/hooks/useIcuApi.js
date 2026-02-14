@@ -8,6 +8,7 @@ const keys = {
   dashboard: ['icu', 'dashboard'],
   admissionRequests: (status) => ['icu', 'admission-requests', status],
   activePatients: ['icu', 'active-patients'],
+  incomingPatients: ['icu', 'incoming-patients'],
   monitoring: (patientId) => ['icu', 'monitoring', patientId],
   history: ['icu', 'history'],
 };
@@ -24,7 +25,10 @@ export function useUpdateBedStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ bedId, status }) => apiPatch(`/api/icu/beds/${bedId}/status`, { status }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.dashboard }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.dashboard });
+      queryClient.invalidateQueries({ queryKey: keys.incomingPatients });
+    },
   });
 }
 
@@ -74,6 +78,14 @@ export function useIcuActivePatients() {
   return useQuery({
     queryKey: keys.activePatients,
     queryFn: () => apiGet('/api/icu/active-patients'),
+  });
+}
+
+export function useIcuIncomingPatients() {
+  return useQuery({
+    queryKey: keys.incomingPatients,
+    queryFn: () => apiGet('/api/icu/incoming-patients'),
+    refetchInterval: 30 * 1000,
   });
 }
 

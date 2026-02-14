@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { registerSW } from 'virtual:pwa-register';
+import 'leaflet/dist/leaflet.css';
+import './utils/leafletFix.js';
 import './index.css';
 import App from './App.jsx';
 

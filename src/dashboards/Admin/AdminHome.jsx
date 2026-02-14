@@ -1,7 +1,9 @@
 /**
- * Admin Home – Dashboard Analytics. All sections use dynamic data from API.
- * Theme tokens + Lucide icons only.
+ * Admin Home – Dashboard Analytics + persistent Live Fleet Map.
+ * Map is always visible so admin can monitor all ambulances at once.
  */
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Users,
   Heart,
@@ -13,9 +15,14 @@ import {
   CalendarCheck,
   Droplets,
   Pill,
+  MapPin,
+  Maximize2,
 } from 'lucide-react';
 import { Card } from '../../components/common';
 import { useAdminDashboardStats } from '../../hooks/useAdminApi';
+import { useFleetTracking } from '../../features/admin/hooks/useFleetTracking';
+import FleetTrackingMap from '../../features/admin/components/FleetTrackingMap';
+import FleetTripDetailModal from '../../features/admin/components/FleetTripDetailModal';
 
 function formatNum(n) {
   if (n == null || Number.isNaN(n)) return '0';
@@ -23,7 +30,9 @@ function formatNum(n) {
 }
 
 export default function AdminHome() {
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
   const { data: stats, isLoading, error } = useAdminDashboardStats();
+  const { vehicles, stats: fleetStats, isLoading: fleetLoading, refetch: refetchFleet } = useFleetTracking();
 
   if (isLoading) {
     return (
@@ -147,6 +156,8 @@ export default function AdminHome() {
         </p>
       </div>
 
+      
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => {
           const Icon = card.icon;
@@ -184,7 +195,47 @@ export default function AdminHome() {
           );
         })}
       </div>
-
+        {/* Persistent Live Fleet Map – always visible */}
+      <Card hover={false} className="overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2 sm:px-4">
+          <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            Live Fleet Map
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => refetchFleet()}
+              className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-muted"
+            >
+              Refresh
+            </button>
+            <Link
+              to="/admin/fleet"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+            >
+              <Maximize2 className="h-3.5 w-3.5" /> Full map
+            </Link>
+          </div>
+        </div>
+        {fleetLoading ? (
+          <div className="flex h-[42vh] min-h-[280px] items-center justify-center bg-surface-muted">
+            <p className="text-text-muted">Loading fleet…</p>
+          </div>
+        ) : (
+          <FleetTrackingMap
+            vehicles={vehicles}
+            stats={fleetStats}
+            onVehicleClick={setSelectedVehicle}
+            className="h-[42vh] min-h-[280px] w-full border-0"
+          />
+        )}
+      </Card>
+      <FleetTripDetailModal
+        open={!!selectedVehicle}
+        onClose={() => setSelectedVehicle(null)}
+        vehicle={selectedVehicle}
+      />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card hover={false}>
           <h2 className="text-lg font-semibold text-text-primary">

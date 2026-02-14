@@ -22,6 +22,12 @@ export const ROLE_ROUTES = {
   [ROLES.GeneralUser]: '/dashboard',
 };
 
+/** Hospital locations for patient map (awareness mode). */
+export const PATIENT_MAP_HOSPITALS = [
+  { name: 'Main Hospital', lat: 40.7128, lng: -74.006 },
+  { name: 'Emergency Center', lat: 40.7282, lng: -73.9942 },
+];
+
 export const ROLE_LABELS = {
   [ROLES.GeneralUser]: 'General User',
   [ROLES.Patient]: 'Patient',

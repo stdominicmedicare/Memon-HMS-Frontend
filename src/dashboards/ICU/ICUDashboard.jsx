@@ -10,7 +10,9 @@ import {
   useIcuActivePatients,
   useCreateBloodRequest,
 } from '../../hooks/useIcuApi';
-import { Bed, Check, Users, Activity, Droplets } from 'lucide-react';
+import { useIcuTracking } from '../../features/icu/hooks/useIcuTracking';
+import IncomingPatientWidget from '../../features/icu/components/IncomingPatientWidget';
+import { Bed, Check, Users, Activity, Droplets, Ambulance } from 'lucide-react';
 import IcuPageNav from './IcuPageNav';
 
 const BED_STATUS_OPTIONS = [
@@ -68,10 +70,12 @@ export default function ICUDashboard() {
   const updateBedStatus = useUpdateBedStatus();
   const { data: activePatients = [] } = useIcuActivePatients();
   const createBloodRequest = useCreateBloodRequest();
+  const { incoming, locationsByTripId, statusByTripId } = useIcuTracking();
 
   const beds = data?.beds || [];
   const stats = data?.stats || {};
   const admissionRequests = data?.admissionRequests || [];
+  const availableBeds = beds.filter((b) => b.status === 'available');
 
   useEffect(() => {
     if (!toast.show) return;
@@ -91,6 +95,16 @@ export default function ICUDashboard() {
           showToast('Bed status updated');
           setStatusModal(null);
         },
+        onError,
+      }
+    );
+  };
+
+  const handlePrepareBed = (bedId) => {
+    updateBedStatus.mutate(
+      { bedId, status: 'reserved' },
+      {
+        onSuccess: () => showToast('Bed reserved – prepare for patient'),
         onError,
       }
     );
@@ -143,6 +157,30 @@ export default function ICUDashboard() {
           iconBg="#e9d5ff"
         />
       </div>
+
+      {/* Incoming Patients (approved ICU + active ambulance) */}
+      {incoming.length > 0 && (
+        <Card className="space-y-4" hover={false}>
+          <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+            <Ambulance className="h-5 w-5 text-primary" />
+            Incoming Patients
+          </h2>
+          <p className="text-sm text-text-secondary">Patients with approved ICU admission currently en route. ETA and live location update in real time.</p>
+          <div className="space-y-3">
+            {incoming.map((trip) => (
+              <IncomingPatientWidget
+                key={trip.id}
+                trip={trip}
+                ambulanceLocation={locationsByTripId[trip.id]}
+                tripStatus={statusByTripId[trip.id] ?? trip.status}
+                availableBeds={availableBeds}
+                onPrepareBed={handlePrepareBed}
+                onArrivingSoon={(id, name) => showToast(`Prepare bed – ${name} arriving in under 5 minutes!`)}
+              />
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* ICU Bed Status */}
       <Card className="space-y-4" hover={false}>

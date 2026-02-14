@@ -5,13 +5,14 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../auth/AuthContext';
 import { ROLE_LABELS } from '../../utils/constants';
-import { LayoutDashboard, Users, Shield, Stethoscope, Ambulance, Bed, FileText, Activity, History, Pill, Droplets } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, Stethoscope, Ambulance, Bed, FileText, Activity, History, Pill, Droplets, MapPin } from 'lucide-react';
 
 const adminLinks = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'User Management', icon: Users },
   { to: '/admin/doctors', label: 'Doctor Management', icon: Stethoscope },
   { to: '/admin/ambulances', label: 'Ambulance Management', icon: Ambulance },
+  { to: '/admin/fleet', label: 'Fleet View', icon: MapPin },
   { to: '/admin/icu', label: 'ICU Management', icon: Bed },
   { to: '/admin/pharmacy', label: 'Pharmacy', icon: Pill },
   { to: '/admin/bloodbank', label: 'Blood Bank', icon: Droplets },

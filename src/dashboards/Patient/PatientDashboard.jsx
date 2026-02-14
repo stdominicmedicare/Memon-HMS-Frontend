@@ -25,6 +25,8 @@ import {
   usePatientIcuMonitoringReport,
   usePatientTransfusionHistory,
 } from '../../hooks/usePatientApi';
+import { usePatientTracking } from '../../features/patient/hooks/usePatientTracking';
+import PatientAmbulanceMap from '../../features/patient/components/PatientAmbulanceMap';
 import {
   CalendarCheck,
   FileText,
@@ -36,6 +38,7 @@ import {
   Eye,
   Download,
   Droplets,
+  MapPin,
 } from 'lucide-react';
 const TAB_APPOINTMENTS = 'appointments';
 const TAB_RECORDS = 'records';
@@ -93,7 +96,6 @@ export default function PatientDashboard() {
   const createAmbulanceMutation = useCreateAmbulanceRequest();
   const cancelAmbulanceMutation = useCancelAmbulanceRequest();
   const [icuReportModal, setIcuReportModal] = useState(false);
-
   useEffect(() => {
     if (!toast.show) return;
     const t = setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
@@ -342,6 +344,8 @@ export default function PatientDashboard() {
 
       {activeTab === TAB_AMBULANCE && (
         <div className="space-y-4">
+          <PatientAmbulanceMap onRequestAmbulance={() => setAmbulanceOpen(true)} />
+
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-bold text-text-primary">Request Ambulance</h2>
             <Button variant="primary" onClick={() => setAmbulanceOpen(true)} className="w-full sm:w-auto">
