@@ -113,12 +113,16 @@ export default function BloodBankDashboard() {
   const [rejectReason, setRejectReason] = useState('');
   const [rejectRequestId, setRejectRequestId] = useState(null);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [createDonationRequestOpen, setCreateDonationRequestOpen] = useState(false);
+  const [donationRequestForm, setDonationRequestForm] = useState({ blood_group: 'O+', quantity_required: 1, location: '', urgency: 'High' });
+  const [expandedPledgesId, setExpandedPledgesId] = useState(null);
 
   const { data: dashboardData, isLoading: dashboardLoading } = useBloodBankDashboard();
   const { data: donors = [], isLoading: donorsLoading } = useBloodBankDonors(donorSearch);
   const { data: inventory = [], isLoading: inventoryLoading } = useBloodBankInventory();
   const { data: testingList = [], isLoading: testingLoading } = useBloodBankUnitsUnderTesting();
   const { data: requests = [], isLoading: requestsLoading } = useBloodBankRequests('');
+  const { data: donationRequests = [], isLoading: donationRequestsLoading } = useBloodBankDonationRequests('');
 
   const createDonor = useBloodBankCreateDonor();
   const createUnit = useBloodBankCreateUnit();
@@ -127,6 +131,9 @@ export default function BloodBankDashboard() {
   const approveRequest = useBloodBankApproveRequest();
   const rejectRequest = useBloodBankRejectRequest();
   const allocateRequest = useBloodBankAllocateRequest();
+  const createDonationRequest = useBloodBankCreateDonationRequest();
+  const updateDonationRequest = useBloodBankUpdateDonationRequest();
+  const completePledge = useBloodBankCompletePledge();
 
   const kpis = dashboardData || {};
   const pendingTests = kpis.pendingTestsCount ?? 0;
