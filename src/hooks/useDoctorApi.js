@@ -111,8 +111,19 @@ export function useCreatePrescription() {
   });
 }
 
+export function useDoctorBloodRequests() {
+  return useQuery({
+    queryKey: ['doctor', 'blood-requests'],
+    queryFn: () => apiGet('/api/doctor/blood-requests'),
+  });
+}
+
 export function useCreateBloodRequest() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body) => apiPost('/api/doctor/blood-requests', body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctor', 'blood-requests'] });
+    },
   });
 }

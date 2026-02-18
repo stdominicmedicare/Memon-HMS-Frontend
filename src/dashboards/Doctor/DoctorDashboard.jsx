@@ -24,11 +24,12 @@ import {
   useDoctorIcuRequests,
   useDoctorIcuMonitoring,
   useCreateBloodRequest,
+  useDoctorBloodRequests,
 } from '../../hooks/useDoctorApi';
 import { useBloodBankAvailability } from '../../hooks/useBloodBankApi';
 import { useDoctorTracking } from '../../features/doctor/hooks/useDoctorTracking';
 import TransferTrackingPreview from '../../features/doctor/components/TransferTrackingPreview';
-import { Users, Calendar, FileText, Pill, Ambulance, User as UserIcon, Send, Eye, Droplets, MapPin } from 'lucide-react';
+import { Users, Calendar, FileText, Pill, Ambulance, User as UserIcon, Send, Eye, Droplets, MapPin, History, Clock } from 'lucide-react';
 
 function formatDate(iso) {
   if (!iso) return '–';
@@ -38,6 +39,26 @@ function formatDate(iso) {
 function formatTime(iso) {
   if (!iso) return '–';
   return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '–';
+  return new Date(iso).toLocaleString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric', 
+    hour: 'numeric', 
+    minute: '2-digit', 
+    hour12: true 
+  });
+}
+
+function isPastDate(dateString) {
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date < today;
 }
 
 export default function DoctorDashboard() {
@@ -72,6 +93,9 @@ export default function DoctorDashboard() {
   const { data: bloodAvailability = {} } = useBloodBankAvailability();
   const createBloodRequestMutation = useCreateBloodRequest();
   const { trips: transferTrips, locationsByTripId, statusByTripId } = useDoctorTracking();
+  const { data: allRecords = [] } = useDoctorRecords(null);
+  const { data: allPrescriptions = [] } = useDoctorPrescriptions(null);
+  const { data: bloodRequests = [] } = useDoctorBloodRequests();
 
   useEffect(() => {
     if (!toast.show) return;
@@ -289,56 +313,298 @@ export default function DoctorDashboard() {
                   );
                 })()}
               </section>
+              <section className="space-y-3">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Previous appointments
+                </h3>
+                {(() => {
+                  const today = new Date().toDateString();
+                  const previousApts = appointments.filter((a) => {
+                    const aptDate = new Date(a.scheduled_at).toDateString();
+                    return aptDate !== today && (a.status === 'confirmed' || a.status === 'completed' || a.status === 'cancelled');
+                  }).sort((a, b) => new Date(b.scheduled_at) - new Date(a.scheduled_at)).slice(0, 10);
+                  
+                  if (previousApts.length === 0) {
+                    return <Card><p className="text-text-muted">No previous appointments.</p></Card>;
+                  }
+                  return (
+                    <div className="space-y-3">
+                      {previousApts.map((apt) => {
+                        const patient = apt.patient || {};
+                        return (
+                          <Card key={apt.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-start gap-3">
+                              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-muted">
+                                <UserIcon className="h-5 w-5 text-text-muted" />
+                              </span>
+                              <div>
+                                <p className="font-medium text-text-primary">{patient.full_name || patient.email || 'Patient'}</p>
+                                <p className="text-sm text-text-muted">
+                                  {formatDateTime(apt.scheduled_at)}
+                                </p>
+                                {apt.notes && <p className="text-sm text-text-secondary">{apt.notes}</p>}
+                              </div>
+                            </div>
+                            <Badge variant={apt.status === 'confirmed' || apt.status === 'completed' ? 'success' : apt.status === 'cancelled' ? 'error' : 'primary'}>
+                              {apt.status}
+                            </Badge>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </section>
             </>
           )}
         </div>
       )}
 
       {activeSection === 'patients' && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-text-primary">Assigned Patients</h2>
-          {patientsLoading ? (
-            <Card><p className="text-text-muted">Loading…</p></Card>
-          ) : patients.length === 0 ? (
-            <Card><p className="text-text-muted">No patients yet. Appointments will link patients here.</p></Card>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {patients.map((p) => (
-                <Card key={p.id} className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-muted text-sm font-medium text-text-primary">
-                    {(p.full_name || p.email || 'P').charAt(0).toUpperCase()}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-medium text-text-primary">{p.full_name || '–'}</p>
-                    <p className="truncate text-sm text-text-secondary">{p.email}</p>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold text-text-primary">Assigned Patients</h2>
+            {patientsLoading ? (
+              <Card><p className="text-text-muted">Loading…</p></Card>
+            ) : patients.length === 0 ? (
+              <Card><p className="text-text-muted">No patients yet. Appointments will link patients here.</p></Card>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {patients.map((p) => (
+                  <Card key={p.id} className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-muted text-sm font-medium text-text-primary">
+                      {(p.full_name || p.email || 'P').charAt(0).toUpperCase()}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-medium text-text-primary">{p.full_name || '–'}</p>
+                      <p className="truncate text-sm text-text-secondary">{p.email}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Recent patient activity
+            </h3>
+            {(() => {
+              const recentActivity = [];
+              
+              // Add recent records
+              allRecords.slice(0, 5).forEach(record => {
+                recentActivity.push({
+                  type: 'record',
+                  id: `record-${record.id}`,
+                  patient: record.patient,
+                  date: record.created_at,
+                  title: record.diagnosis || 'Medical Record',
+                  icon: FileText,
+                });
+              });
+              
+              // Add recent prescriptions
+              allPrescriptions.slice(0, 5).forEach(prescription => {
+                recentActivity.push({
+                  type: 'prescription',
+                  id: `prescription-${prescription.id}`,
+                  patient: prescription.patient,
+                  date: prescription.created_at,
+                  title: prescription.medication,
+                  icon: Pill,
+                });
+              });
+              
+              // Sort by date and take most recent 10
+              const sortedActivity = recentActivity
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 10);
+              
+              if (sortedActivity.length === 0) {
+                return <Card><p className="text-text-muted">No recent activity.</p></Card>;
+              }
+              
+              return (
+                <div className="space-y-3">
+                  {sortedActivity.map((activity) => {
+                    const patient = activity.patient || {};
+                    const Icon = activity.icon;
+                    return (
+                      <Card key={activity.id} className="flex items-start gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-muted">
+                          <Icon className="h-5 w-5 text-text-muted" />
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-text-primary">{activity.title}</p>
+                          <p className="text-sm text-text-secondary">{patient.full_name || patient.email || 'Patient'}</p>
+                          <p className="text-xs text-text-muted flex items-center gap-1 mt-1">
+                            <Clock className="h-3 w-3" />
+                            {formatDateTime(activity.date)}
+                          </p>
+                        </div>
+                        <Badge variant="primary" className="shrink-0">
+                          {activity.type === 'record' ? 'Record' : 'Prescription'}
+                        </Badge>
+                      </Card>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </section>
         </div>
       )}
 
       {activeSection === 'record' && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-text-primary">Create Medical Record</h2>
-          <Card>
-            <p className="text-text-secondary mb-4">Add a medical record for a patient you have seen.</p>
-            <Button variant="primary" onClick={() => setRecordModal(true)}>
-              + Create Medical Record
-            </Button>
-          </Card>
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold text-text-primary">Create Medical Record</h2>
+            <Card>
+              <p className="text-text-secondary mb-4">Add a medical record for a patient you have seen.</p>
+              <Button variant="primary" onClick={() => setRecordModal(true)}>
+                + Create Medical Record
+              </Button>
+            </Card>
+          </div>
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Previous medical records
+            </h3>
+            {allRecords.length === 0 ? (
+              <Card><p className="text-text-muted">No medical records yet.</p></Card>
+            ) : (
+              <div className="space-y-3">
+                {allRecords
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                  .slice(0, 10)
+                  .map((record) => {
+                    const patient = record.patient || {};
+                    return (
+                      <Card key={record.id} className="flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3 flex-1">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-muted">
+                              <FileText className="h-5 w-5 text-text-muted" />
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-text-primary">{patient.full_name || patient.email || 'Patient'}</p>
+                              <p className="text-sm text-text-muted flex items-center gap-2 mt-1">
+                                <Clock className="h-3 w-3" />
+                                {formatDateTime(record.created_at)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        {(record.diagnosis || record.notes || record.observations) && (
+                          <div className="ml-[52px] space-y-2">
+                            {record.diagnosis && (
+                              <div>
+                                <p className="text-sm font-medium text-text-primary mb-1">Diagnosis:</p>
+                                <p className="text-sm text-text-secondary">{record.diagnosis}</p>
+                              </div>
+                            )}
+                            {record.notes && (
+                              <div>
+                                <p className="text-sm font-medium text-text-primary mb-1">Notes:</p>
+                                <p className="text-sm text-text-secondary">{record.notes}</p>
+                              </div>
+                            )}
+                            {record.observations && (
+                              <div>
+                                <p className="text-sm font-medium text-text-primary mb-1">Observations:</p>
+                                <p className="text-sm text-text-secondary">{record.observations}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </Card>
+                    );
+                  })}
+              </div>
+            )}
+          </section>
         </div>
       )}
 
       {activeSection === 'prescription' && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-text-primary">Create Prescription</h2>
-          <Card>
-            <Button variant="primary" onClick={() => setPrescriptionModal(true)}>
-              + Write Prescription
-            </Button>
-          </Card>
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold text-text-primary">Create Prescription</h2>
+            <Card>
+              <Button variant="primary" onClick={() => setPrescriptionModal(true)}>
+                + Write Prescription
+              </Button>
+            </Card>
+          </div>
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Previous prescriptions
+            </h3>
+            {allPrescriptions.length === 0 ? (
+              <Card><p className="text-text-muted">No prescriptions yet.</p></Card>
+            ) : (
+              <div className="space-y-3">
+                {allPrescriptions
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                  .slice(0, 10)
+                  .map((prescription) => {
+                    const patient = prescription.patient || {};
+                    return (
+                      <Card key={prescription.id} className="flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3 flex-1">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-muted">
+                              <Pill className="h-5 w-5 text-text-muted" />
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-text-primary">{patient.full_name || patient.email || 'Patient'}</p>
+                              <p className="text-sm text-text-muted flex items-center gap-2 mt-1">
+                                <Clock className="h-3 w-3" />
+                                {formatDateTime(prescription.created_at)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="ml-[52px] space-y-2">
+                          <div>
+                            <p className="text-sm font-medium text-text-primary">Medication:</p>
+                            <p className="text-sm text-text-secondary">{prescription.medication}</p>
+                          </div>
+                          {prescription.dosage && (
+                            <div>
+                              <p className="text-sm font-medium text-text-primary">Dosage:</p>
+                              <p className="text-sm text-text-secondary">{prescription.dosage}</p>
+                            </div>
+                          )}
+                          {prescription.frequency && (
+                            <div>
+                              <p className="text-sm font-medium text-text-primary">Frequency:</p>
+                              <p className="text-sm text-text-secondary">{prescription.frequency}</p>
+                            </div>
+                          )}
+                          {prescription.duration && (
+                            <div>
+                              <p className="text-sm font-medium text-text-primary">Duration:</p>
+                              <p className="text-sm text-text-secondary">{prescription.duration}</p>
+                            </div>
+                          )}
+                          {prescription.instructions && (
+                            <div>
+                              <p className="text-sm font-medium text-text-primary">Instructions:</p>
+                              <p className="text-sm text-text-secondary">{prescription.instructions}</p>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    );
+                  })}
+              </div>
+            )}
+          </section>
         </div>
       )}
 
@@ -423,6 +689,69 @@ export default function DoctorDashboard() {
               </div>
             </form>
           </Modal>
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Previous blood requests
+            </h3>
+            {bloodRequests.length === 0 ? (
+              <Card><p className="text-text-muted">No blood requests yet.</p></Card>
+            ) : (
+              <div className="space-y-3">
+                {bloodRequests
+                  .sort((a, b) => new Date(b.created_at || b.requested_at) - new Date(a.created_at || a.requested_at))
+                  .slice(0, 10)
+                  .map((request) => {
+                    const patient = request.patient || {};
+                    return (
+                      <Card key={request.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-muted">
+                            <Droplets className="h-5 w-5 text-text-muted" />
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-text-primary">{patient.full_name || patient.email || 'Patient'}</p>
+                            <p className="text-sm text-text-muted flex items-center gap-2 mt-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDateTime(request.created_at || request.requested_at)}
+                            </p>
+                            <div className="flex flex-wrap gap-3 mt-2 text-sm">
+                              <span className="text-text-secondary">
+                                <strong>Blood Group:</strong> {request.blood_group_required || request.blood_group}
+                              </span>
+                              <span className="text-text-secondary">
+                                <strong>Units:</strong> {request.units_required || request.units}
+                              </span>
+                              {request.urgency_level && (
+                                <span className="text-text-secondary">
+                                  <strong>Urgency:</strong> {request.urgency_level}
+                                </span>
+                              )}
+                            </div>
+                            {request.medical_reason && (
+                              <p className="text-sm text-text-secondary mt-2">
+                                <strong>Reason:</strong> {request.medical_reason}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        {request.status && (
+                          <Badge 
+                            variant={
+                              request.status === 'approved' || request.status === 'fulfilled' ? 'success' : 
+                              request.status === 'rejected' ? 'error' : 
+                              request.status === 'pending' ? 'warning' : 'primary'
+                            }
+                          >
+                            {request.status}
+                          </Badge>
+                        )}
+                      </Card>
+                    );
+                  })}
+              </div>
+            )}
+          </section>
         </div>
       )}
 
