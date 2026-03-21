@@ -50,7 +50,7 @@ This checklist is based on [web.dev](https://web.dev) and [Chrome PWA](https://d
 ## 5. How to test “like an app” / Add to Home Screen
 
 1. **HTTPS** – Use HTTPS (e.g. ngrok or production). HTTP often blocks install / home screen.
-2. **Chrome (desktop):** Install via address bar icon or menu → “Install Hospital Management System”. App opens in its own window; icon in taskbar/dock.
+2. **Chrome (desktop):** Install via address bar icon or menu → “Install MEMON COMMUNITY HOSPITAL”. App opens in its own window; icon in taskbar/dock.
 3. **Chrome (Android):** Menu → “Add to Home screen” or “Install app”. Icon and name come from manifest + apple-touch-icon.
 4. **iOS Safari:** Share → “Add to Home Screen”. Icon comes from **apple-touch-icon** (180×180 in `public/`).
 

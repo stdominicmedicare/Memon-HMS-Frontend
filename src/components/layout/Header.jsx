@@ -66,10 +66,10 @@ export default function Header({ onMenuClick }) {
             {portalTitle ? (
               <>
                 <span className="font-semibold text-white leading-tight">{portalTitle}</span>
-                <span className="text-xs text-white/80 leading-tight">Hospital Management System</span>
+                <span className="text-xs text-white/80 leading-tight">MEMON COMMUNITY HOSPITAL</span>
               </>
             ) : (
-              <span className="font-semibold text-white">Hospital Management System</span>
+              <span className="font-semibold text-white">MEMON COMMUNITY HOSPITAL</span>
             )}
           </span>
         </NavLink>

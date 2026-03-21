@@ -87,7 +87,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-6 text-sm text-white/70 sm:flex-row">
-          <span>© {new Date().getFullYear()} Hospital Management System. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} MEMON COMMUNITY HOSPITAL. All rights reserved.</span>
           <span>Powered by HMS</span>
         </div>
       </div>

@@ -48,7 +48,7 @@ export default function Login() {
             <Building2 className="h-10 w-10" />
           </div>
           <h1 className="text-xl font-bold text-text-primary sm:text-2xl">
-            Hospital Management System
+            MEMON COMMUNITY HOSPITAL
           </h1>
           <p className="text-sm text-text-secondary mt-1">
             Sign in to access your dashboard

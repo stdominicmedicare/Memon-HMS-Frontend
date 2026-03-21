@@ -1,6 +1,6 @@
-# Hospital Management System – Frontend (React PWA)
+# MEMON COMMUNITY HOSPITAL – Frontend (React PWA)
 
-Role-based React PWA for the Hospital Management System.
+Role-based React PWA for the MEMON COMMUNITY HOSPITAL.
 
 ## Tech Stack
 

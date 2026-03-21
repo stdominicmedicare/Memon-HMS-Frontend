@@ -235,16 +235,32 @@ export function useAuth() {
       
       if (e) {
         console.error('[useAuth] Sign in failed:', e.message);
-        setError(e.message);
-        return { error: e.message };
+        
+        // Provide more helpful error messages
+        let errorMessage = e.message;
+        if (e.message.includes('Failed to fetch') || e.message.includes('ERR_NAME_NOT_RESOLVED')) {
+          errorMessage = 'Cannot connect to Supabase. Please check your Supabase URL in .env file. The project might not exist or the URL is incorrect.';
+        } else if (e.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please check your credentials.';
+        }
+        
+        setError(errorMessage);
+        return { error: errorMessage };
       }
       
       console.log('[useAuth] Sign in successful');
       return { data };
     } catch (err) {
       console.error('[useAuth] Sign in error:', err);
-      setError(err.message);
-      return { error: err.message };
+      
+      // Handle network errors
+      let errorMessage = err.message;
+      if (err.message.includes('Failed to fetch') || err.message.includes('ERR_NAME_NOT_RESOLVED')) {
+        errorMessage = 'Network error: Cannot connect to Supabase. Please verify your Supabase project URL in the .env file.';
+      }
+      
+      setError(errorMessage);
+      return { error: errorMessage };
     }
   }, []);
 

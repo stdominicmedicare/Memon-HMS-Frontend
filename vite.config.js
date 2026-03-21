@@ -14,9 +14,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       manifestFilename: 'manifest.webmanifest',
       manifest: {
-        name: 'Hospital Management System',
+        name: 'MEMON COMMUNITY HOSPITAL',
         short_name: 'HMS',
-        description: 'Role-based Hospital Management System (PWA)',
+        description: 'Role-based MEMON COMMUNITY HOSPITAL (PWA)',
         start_url: '/',
         display: 'standalone',
         background_color: '#ffffff',
