@@ -4,12 +4,14 @@ import mkcert from 'vite-plugin-mkcert';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const isProd = process.env.NODE_ENV === 'production';
+// mkcert needs sudo to install the local CA; skip unless VITE_USE_MKCERT=1
+const useMkcert = !isProd && process.env.VITE_USE_MKCERT === '1';
 
 export default defineConfig({
   plugins: [
     react(),
-    // mkcert only in dev (Vercel/CI have no local certs; build would fail)
-    ...(isProd ? [] : [mkcert({ hosts: ['localhost', '127.0.0.1', '192.168.100.7'] })]),
+    // mkcert only in dev when explicitly enabled (requires `mkcert -install` / sudo once)
+    ...(useMkcert ? [mkcert({ hosts: ['localhost', '127.0.0.1', '192.168.100.7'] })] : []),
     VitePWA({
       registerType: 'autoUpdate',
       manifestFilename: 'manifest.webmanifest',
@@ -41,7 +43,7 @@ export default defineConfig({
     : {
         port: 5173,
         host: true,
-        https: true,
+        https: useMkcert,
         allowedHosts: ['localhost', '127.0.0.1', '192.168.100.7', 'jennette-aware-mark.ngrok-free.dev'],
       },
 });
