@@ -111,7 +111,7 @@ function CenterOnMeButton({ onClick, disabled }) {
 }
 
 export default function DriverFleetMap({
-  className = 'h-[55vh] min-h-[360px] w-full rounded-lg overflow-hidden border border-border',
+  className = 'h-[40vh] min-h-[220px] w-full rounded-lg overflow-hidden border border-border sm:h-[55vh] sm:min-h-[360px]',
 }) {
   const { data: fleetData, isLoading } = useAmbulanceFleetView();
   const { latitude: myLat, longitude: myLng } = useGeolocation(true);

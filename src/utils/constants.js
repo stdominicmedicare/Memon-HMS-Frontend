@@ -9,6 +9,9 @@ export const ROLES = {
   Pharmacy: 'Pharmacy',
   BloodBank: 'BloodBank',
   Volunteer: 'Volunteer',
+  Nurse: 'Nurse',
+  Receptionist: 'Receptionist',
+  RecordsOfficer: 'RecordsOfficer',
 };
 
 export const ROLE_ROUTES = {
@@ -19,9 +22,12 @@ export const ROLE_ROUTES = {
   [ROLES.ICU]: '/icu',
   [ROLES.Pharmacy]: '/pharmacy',
   [ROLES.BloodBank]: '/bloodbank',
-  'Blood Bank': '/bloodbank', // allow DB value with space
+  'Blood Bank': '/bloodbank',
   [ROLES.Volunteer]: '/volunteer',
   [ROLES.GeneralUser]: '/dashboard',
+  [ROLES.Nurse]: '/admin/patients',
+  [ROLES.Receptionist]: '/admin/patients',
+  [ROLES.RecordsOfficer]: '/admin/patients',
 };
 
 /** Blood groups for donors/volunteers/blood bank. */
@@ -42,4 +48,8 @@ export const ROLE_LABELS = {
   [ROLES.ICU]: 'ICU Staff',
   [ROLES.Pharmacy]: 'Pharmacist',
   [ROLES.BloodBank]: 'Blood Bank Staff',
+  [ROLES.Volunteer]: 'Volunteer',
+  [ROLES.Nurse]: 'Nurse',
+  [ROLES.Receptionist]: 'Receptionist / Front Desk',
+  [ROLES.RecordsOfficer]: 'Records Officer',
 };

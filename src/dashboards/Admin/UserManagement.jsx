@@ -20,6 +20,7 @@ import {
 } from '../../components/common';
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../services/api';
 import { ROLES, ROLE_LABELS } from '../../utils/constants';
+import { validatePassword, PASSWORD_HINT } from '../../utils/passwordPolicy';
 import { Pencil, Power, PowerOff, Trash2, UserPlus, KeyRound } from 'lucide-react';
 
 const roleOptions = Object.values(ROLES).map((r) => ({ value: r, label: ROLE_LABELS[r] || r }));
@@ -143,6 +144,11 @@ export default function UserManagement() {
       showToast(setToast, 'Email, password, and role are required', 'error');
       return;
     }
+    const check = validatePassword(createForm.password);
+    if (!check.ok) {
+      showToast(setToast, check.error, 'error');
+      return;
+    }
     setCreating(true);
     try {
       await apiPost('/api/admin/users', {
@@ -164,8 +170,10 @@ export default function UserManagement() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    if (!resetPasswordUser || !resetPasswordValue || resetPasswordValue.length < 6) {
-      showToast(setToast, 'Password must be at least 6 characters', 'error');
+    if (!resetPasswordUser) return;
+    const check = validatePassword(resetPasswordValue);
+    if (!check.ok) {
+      showToast(setToast, check.error, 'error');
       return;
     }
     setResettingPassword(true);
@@ -397,10 +405,11 @@ export default function UserManagement() {
             type="password"
             value={createForm.password}
             onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
-            placeholder="Min 6 characters"
+            placeholder={PASSWORD_HINT}
             required
-            minLength={6}
+            minLength={10}
           />
+          <p className="text-xs text-text-muted">{PASSWORD_HINT}</p>
           <Input
             label="Full name (optional)"
             value={createForm.full_name}
@@ -440,10 +449,11 @@ export default function UserManagement() {
               type="password"
               value={resetPasswordValue}
               onChange={(e) => setResetPasswordValue(e.target.value)}
-              placeholder="Min 6 characters"
+              placeholder={PASSWORD_HINT}
               required
-              minLength={6}
+              minLength={10}
             />
+            <p className="text-xs text-text-muted">{PASSWORD_HINT}</p>
             <div className="flex flex-wrap justify-end gap-2 pt-2">
               <Button
                 type="button"
@@ -452,7 +462,7 @@ export default function UserManagement() {
               >
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" disabled={resettingPassword || resetPasswordValue.length < 6}>
+              <Button type="submit" variant="primary" disabled={resettingPassword}>
                 {resettingPassword ? 'Updating…' : 'Update password'}
               </Button>
             </div>

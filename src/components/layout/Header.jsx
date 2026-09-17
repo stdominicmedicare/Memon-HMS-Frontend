@@ -1,6 +1,7 @@
 /**
  * Global header – dark teal (MediCare reference), white nav, primary CTA.
  * NavLink for active state; proper routing.
+ * Desktop/tablet: dense nav from lg up; phones/tablets use hamburger + MobileNav.
  */
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Plus, LogOut, Building2 } from 'lucide-react';
@@ -24,11 +25,25 @@ function getPortalTitle(role, pathname) {
   return null;
 }
 
+/** Short titles for narrow screens to avoid header overflow */
+function getShortPortalTitle(portalTitle) {
+  if (!portalTitle) return null;
+  if (portalTitle.includes('Blood Bank')) return 'Blood Bank';
+  if (portalTitle.includes('Pharmacy')) return 'Pharmacy';
+  if (portalTitle.includes('ICU')) return 'ICU';
+  if (portalTitle.includes('Ambulance')) return 'Ambulance';
+  if (portalTitle.includes('Patient')) return 'Patient';
+  if (portalTitle.includes('Doctor')) return 'Doctor';
+  if (portalTitle.includes('Volunteer')) return 'Volunteer';
+  return portalTitle;
+}
+
 export default function Header({ onMenuClick }) {
   const { profile, signOut, role } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
   const portalTitle = getPortalTitle(role, location.pathname);
+  const shortTitle = getShortPortalTitle(portalTitle);
 
   const handleSignOut = async () => {
     await signOut();
@@ -36,55 +51,80 @@ export default function Header({ onMenuClick }) {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `text-sm font-medium transition-colors touch-manipulation ${
+    `shrink-0 whitespace-nowrap text-sm font-medium transition-colors touch-manipulation ${
       isActive ? 'text-cta' : 'text-white/90 hover:text-white'
     }`;
 
+  const brandHome =
+    role === 'Admin' &&
+    (location.pathname.startsWith('/admin/pharmacy') ||
+      location.pathname.startsWith('/admin/bloodbank'))
+      ? location.pathname.startsWith('/admin/bloodbank')
+        ? '/admin/bloodbank'
+        : '/admin/pharmacy'
+      : role === 'Blood Bank'
+        ? '/bloodbank'
+        : role === 'Volunteer'
+          ? '/volunteer'
+          : getHomePath(role);
+
   return (
     <header
-      className="sticky top-0 z-40 flex h-14 items-center justify-between px-4 md:px-6 lg:px-8"
+      className="sticky top-0 z-40 flex h-14 min-w-0 items-center justify-between gap-2 px-3 sm:px-4 md:px-6 lg:px-8"
       style={{ backgroundColor: 'var(--color-header-footer)' }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <button
           type="button"
           onClick={onMenuClick}
-          className="touch-manipulation rounded-button p-2 text-white md:hidden"
+          className="touch-manipulation shrink-0 rounded-button p-2 text-white lg:hidden"
           aria-label="Open menu"
         >
           <Menu className="h-6 w-6" />
         </button>
-        <NavLink to={role === 'Admin' && (location.pathname.startsWith('/admin/pharmacy') || location.pathname.startsWith('/admin/bloodbank')) ? (location.pathname.startsWith('/admin/bloodbank') ? '/admin/bloodbank' : '/admin/pharmacy') : (role === 'Blood Bank' ? '/bloodbank' : role === 'Volunteer' ? '/volunteer' : getHomePath(role))} className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+        <NavLink to={brandHome} className="flex min-w-0 items-center gap-2">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
             {portalTitle ? (
               <Building2 className="h-5 w-5 text-white" />
             ) : (
               <Plus className="h-5 w-5 text-white" strokeWidth={2.5} />
             )}
           </span>
-          <span className="flex flex-col">
+          <span className="flex min-w-0 flex-col">
             {portalTitle ? (
               <>
-                <span className="font-semibold text-white leading-tight">{portalTitle}</span>
-                <span className="text-xs text-white/80 leading-tight">MEMON COMMUNITY HOSPITAL</span>
+                <span className="truncate font-semibold leading-tight text-white max-w-[42vw] sm:max-w-[12rem] md:max-w-[16rem]">
+                  <span className="sm:hidden">{shortTitle}</span>
+                  <span className="hidden sm:inline">{portalTitle}</span>
+                </span>
+                <span className="hidden truncate text-xs leading-tight text-white/80 xs:block">
+                  MEMON COMMUNITY HOSPITAL
+                </span>
               </>
             ) : (
-              <span className="font-semibold text-white">MEMON COMMUNITY HOSPITAL</span>
+              <span className="truncate font-semibold text-white max-w-[50vw] sm:max-w-none">
+                MEMON COMMUNITY HOSPITAL
+              </span>
             )}
           </span>
         </NavLink>
       </div>
 
       <nav
-        className={`items-center gap-2 md:gap-6 ${
-          role === 'ICU' ? 'flex flex-wrap' : 'hidden md:flex'
-        }`}
+        className="hidden max-w-[48vw] items-center gap-4 overflow-x-auto lg:flex xl:max-w-none xl:gap-6"
+        aria-label="Primary"
       >
         <NavLink to={getHomePath(role)} className={navLinkClass}>
           Home
         </NavLink>
         {role === 'Admin' && (
           <>
+            <NavLink to="/admin/patients" className={navLinkClass}>
+              Patient Records
+            </NavLink>
+            <NavLink to="/admin/reports" className={navLinkClass}>
+              Reports
+            </NavLink>
             <NavLink to="/admin/users" className={navLinkClass}>
               User Management
             </NavLink>
@@ -109,7 +149,36 @@ export default function Header({ onMenuClick }) {
             <NavLink to="/admin/roles" className={navLinkClass}>
               Role Assignment
             </NavLink>
+            <NavLink to="/admin/audit-logs" className={navLinkClass}>
+              Audit Trail
+            </NavLink>
+            <NavLink to="/admin/security" className={navLinkClass}>
+              Security (2FA)
+            </NavLink>
           </>
+        )}
+        {role === 'RecordsOfficer' && (
+          <>
+            <NavLink to="/admin/patients" className={navLinkClass}>
+              Patient Records
+            </NavLink>
+            <NavLink to="/admin/reports" className={navLinkClass}>
+              Reports
+            </NavLink>
+            <NavLink to="/admin/audit-logs" className={navLinkClass}>
+              Audit Trail
+            </NavLink>
+          </>
+        )}
+        {(role === 'Doctor' || role === 'Nurse' || role === 'Receptionist') && (
+          <NavLink to="/admin/patients" className={navLinkClass}>
+            Patient Records
+          </NavLink>
+        )}
+        {role === 'Doctor' && (
+          <NavLink to="/admin/reports" className={navLinkClass}>
+            Reports
+          </NavLink>
         )}
         {role === 'ICU' && (
           <>
@@ -129,7 +198,7 @@ export default function Header({ onMenuClick }) {
         )}
       </nav>
 
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <span className="hidden max-w-[140px] truncate text-right text-sm sm:inline">
           <span className="block font-medium text-white">{profile?.full_name || profile?.email || 'User'}</span>
           {role && (

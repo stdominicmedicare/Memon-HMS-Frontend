@@ -1,9 +1,11 @@
 /**
  * Public signup – Patients ONLY. Creates auth user; trigger creates profile with role = Patient.
+ * Collects phone + DOB for search and duplicate detection.
+ * Requires explicit data-storage consent (compliance).
  */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Building2 } from 'lucide-react';
+import { Mail, Lock, User, Building2, Phone, Calendar } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { Button, Input, Card } from '../components/common';
 
@@ -11,6 +13,9 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [dataConsent, setDataConsent] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -19,13 +24,24 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!dataConsent) {
+      setError('Please confirm consent to store your personal and health data.');
+      return;
+    }
     setLoading(true);
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: fullName || email },
+          data: {
+            full_name: fullName || email,
+            phone: phone || null,
+            date_of_birth: dateOfBirth || null,
+            role: 'Patient',
+            data_consent: true,
+            data_consent_method: 'self_signup',
+          },
           emailRedirectTo: undefined,
         },
       });
@@ -94,6 +110,7 @@ export default function Signup() {
             onChange={(e) => setFullName(e.target.value)}
             leftIcon={<User className="h-5 w-5 text-text-muted" />}
             autoComplete="name"
+            required
           />
           <Input
             label="Email"
@@ -106,6 +123,22 @@ export default function Signup() {
             autoComplete="email"
           />
           <Input
+            label="Phone"
+            type="tel"
+            placeholder="03XX-XXXXXXX"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            leftIcon={<Phone className="h-5 w-5 text-text-muted" />}
+            autoComplete="tel"
+          />
+          <Input
+            label="Date of birth"
+            type="date"
+            value={dateOfBirth}
+            onChange={(e) => setDateOfBirth(e.target.value)}
+            leftIcon={<Calendar className="h-5 w-5 text-text-muted" />}
+          />
+          <Input
             label="Password"
             type="password"
             placeholder="Min 6 characters"
@@ -116,8 +149,22 @@ export default function Signup() {
             minLength={6}
             autoComplete="new-password"
           />
+          <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={dataConsent}
+              onChange={(e) => setDataConsent(e.target.checked)}
+              required
+            />
+            <span>
+              I consent to St. Dominic / Memon HMS storing my personal and health-related
+              information for care delivery, appointments, and hospital records, in line with
+              applicable data-protection requirements.
+            </span>
+          </label>
           {error && <p className="text-sm text-error">{error}</p>}
-          <Button type="submit" variant="primary" fullWidth disabled={loading}>
+          <Button type="submit" variant="primary" fullWidth disabled={loading || !dataConsent}>
             {loading ? 'Creating…' : 'Create account'}
           </Button>
         </form>

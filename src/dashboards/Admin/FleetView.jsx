@@ -34,7 +34,7 @@ export default function FleetView() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-text-primary">Fleet View</h1>
-        <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-border bg-surface-muted">
+        <div className="flex min-h-[240px] items-center justify-center rounded-lg border border-border bg-surface-muted sm:min-h-[400px]">
           <p className="text-text-muted">Loading fleet…</p>
         </div>
       </div>

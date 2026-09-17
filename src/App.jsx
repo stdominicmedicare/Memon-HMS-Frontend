@@ -10,7 +10,7 @@ import { AppLayout } from './components/layout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Unauthorized from './pages/Unauthorized';
-import { AdminHome, UserManagement, RoleAssignment, DoctorManagement, AmbulanceManagement, FleetView, ICUManagement, VolunteerManagement } from './dashboards/Admin';
+import { AdminHome, UserManagement, RoleAssignment, DoctorManagement, AmbulanceManagement, FleetView, ICUManagement, VolunteerManagement, AuditLogs, PatientRecords, Reports } from './dashboards/Admin';
 import { PatientDashboard } from './dashboards/Patient';
 import { DoctorDashboard } from './dashboards/Doctor';
 import { AmbulanceDashboard } from './dashboards/Ambulance';
@@ -18,6 +18,9 @@ import { ICUDashboard, AdmissionRequests, PatientMonitoring, ICUHistory } from '
 import { PharmacyDashboard } from './dashboards/Pharmacy';
 import { BloodBankDashboard } from './dashboards/BloodBank';
 import { VolunteerDashboard } from './dashboards/Volunteer';
+import StaffPortal from './dashboards/Staff/StaffPortal';
+import ChangePassword from './pages/ChangePassword';
+import AdminSecurity from './pages/AdminSecurity';
 import TestMap from './components/map/TestMap';
 
 function GeneralUserShell() {
@@ -42,6 +45,14 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/map-test"
             element={
@@ -171,6 +182,67 @@ export default function App() {
                 <RoleGuard allowedRoles={['Admin']}>
                   <AppLayout>
                     <VolunteerManagement />
+                  </AppLayout>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/patients"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'Receptionist', 'RecordsOfficer', 'Doctor', 'Nurse']}>
+                  <AppLayout>
+                    <PatientRecords />
+                  </AppLayout>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'RecordsOfficer', 'Doctor']}>
+                  <AppLayout>
+                    <Reports />
+                  </AppLayout>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/audit-logs"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin', 'RecordsOfficer']}>
+                  <AppLayout>
+                    <AuditLogs />
+                  </AppLayout>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/security"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Admin']}>
+                  <AppLayout>
+                    <AdminSecurity />
+                  </AppLayout>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/staff"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['Nurse', 'Receptionist']}>
+                  <AppLayout>
+                    <StaffPortal />
                   </AppLayout>
                 </RoleGuard>
               </ProtectedRoute>

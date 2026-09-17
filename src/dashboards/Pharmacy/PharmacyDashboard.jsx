@@ -216,7 +216,7 @@ export default function PharmacyDashboard() {
             </Button>
           </div>
           <div className="mb-4 flex flex-wrap gap-2">
-            <div className="relative flex-1 min-w-[200px]">
+            <div className="relative w-full min-w-0 flex-1 sm:min-w-[200px]">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
               <input
                 type="text"
@@ -230,7 +230,7 @@ export default function PharmacyDashboard() {
               options={[{ value: 'All', label: 'All' }, ...CATEGORIES.map((c) => ({ value: c, label: c }))]}
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
             />
           </div>
           {medicinesLoading ? (

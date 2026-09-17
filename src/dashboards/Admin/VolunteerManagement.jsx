@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, Input, Select, Table, TableHead, TableBody, TableRow, Th, Td } from '../../components/common';
 import { apiGet, apiPost, apiPatch } from '../../services/api';
 import { BLOOD_GROUPS } from '../../utils/constants';
+import { validatePassword, PASSWORD_HINT } from '../../utils/passwordPolicy';
 import { UserPlus, Pencil, Droplets } from 'lucide-react';
 
 const bloodGroupOptions = BLOOD_GROUPS.map((bg) => ({ value: bg, label: bg }));
@@ -54,8 +55,9 @@ export default function VolunteerManagement() {
       showToast(setToast, 'Email, password, and blood group are required', 'error');
       return;
     }
-    if (createForm.password.length < 6) {
-      showToast(setToast, 'Password must be at least 6 characters', 'error');
+    const check = validatePassword(createForm.password);
+    if (!check.ok) {
+      showToast(setToast, check.error, 'error');
       return;
     }
     setCreating(true);

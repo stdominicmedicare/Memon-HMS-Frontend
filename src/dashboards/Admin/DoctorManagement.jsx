@@ -20,6 +20,7 @@ import {
   Toast,
 } from '../../components/common';
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../services/api';
+import { validatePassword, PASSWORD_HINT } from '../../utils/passwordPolicy';
 import { Stethoscope, UserPlus, Pencil, Trash2, BarChart3 } from 'lucide-react';
 
 const DOCTOR_STATUS_OPTIONS = [
@@ -84,6 +85,7 @@ export default function DoctorManagement() {
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [departments, setDepartments] = useState([]);
 
   const loadDoctors = useCallback(() => {
     setLoading(true);
@@ -93,9 +95,16 @@ export default function DoctorManagement() {
       .finally(() => setLoading(false));
   }, []);
 
+  const loadDepartments = useCallback(() => {
+    apiGet('/api/admin/departments')
+      .then((data) => setDepartments(Array.isArray(data) ? data : []))
+      .catch(() => setDepartments([]));
+  }, []);
+
   useEffect(() => {
     loadDoctors();
-  }, [loadDoctors]);
+    loadDepartments();
+  }, [loadDoctors, loadDepartments]);
 
   useEffect(() => {
     if (!toast.show) return;
@@ -139,8 +148,9 @@ export default function DoctorManagement() {
       showToast(setToast, 'Full name, email, password, specialization, department, and license number are required', 'error');
       return;
     }
-    if (password.length < 6) {
-      showToast(setToast, 'Password must be at least 6 characters', 'error');
+    const check = validatePassword(password);
+    if (!check.ok) {
+      showToast(setToast, check.error, 'error');
       return;
     }
     setCreating(true);
@@ -162,6 +172,7 @@ export default function DoctorManagement() {
       setCreateOpen(false);
       setCreateForm(initialCreateForm);
       loadDoctors();
+      loadDepartments();
     } catch (err) {
       showToast(setToast, err.message || 'Create failed', 'error');
     } finally {
@@ -190,6 +201,7 @@ export default function DoctorManagement() {
       showToast(setToast, 'Doctor profile updated');
       setEditDoctor(null);
       loadDoctors();
+      loadDepartments();
     } catch (err) {
       showToast(setToast, err.message || 'Update failed', 'error');
     } finally {
@@ -371,7 +383,8 @@ export default function DoctorManagement() {
             onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
             placeholder="Min 6 characters"
             required
-            minLength={6}
+            minLength={10}
+            placeholder={PASSWORD_HINT}
           />
           <Input
             label="Specialization"
@@ -384,9 +397,18 @@ export default function DoctorManagement() {
             label="Department"
             value={createForm.department}
             onChange={(e) => setCreateForm((f) => ({ ...f, department: e.target.value }))}
-            placeholder="e.g. Internal Medicine"
+            placeholder="Pick or type a new department"
+            list="department-options"
             required
           />
+          <datalist id="department-options">
+            {departments.map((d) => (
+              <option key={d.id || d.name} value={d.name} />
+            ))}
+          </datalist>
+          <p className="text-xs text-text-muted -mt-2">
+            New names are saved to the departments catalog automatically (no redeploy).
+          </p>
           <Input
             label="License Number"
             value={createForm.license_number}
@@ -463,7 +485,18 @@ export default function DoctorManagement() {
               placeholder="+1 234 567 8900"
             />
             <Input label="Specialization" value={editForm.specialty} onChange={(e) => setEditForm((f) => ({ ...f, specialty: e.target.value }))} placeholder="Cardiology" />
-            <Input label="Department" value={editForm.department} onChange={(e) => setEditForm((f) => ({ ...f, department: e.target.value }))} placeholder="Internal Medicine" />
+            <Input
+              label="Department"
+              value={editForm.department}
+              onChange={(e) => setEditForm((f) => ({ ...f, department: e.target.value }))}
+              placeholder="Internal Medicine"
+              list="department-options-edit"
+            />
+            <datalist id="department-options-edit">
+              {departments.map((d) => (
+                <option key={d.id || d.name} value={d.name} />
+              ))}
+            </datalist>
             <Input label="License Number" value={editForm.license_number} onChange={(e) => setEditForm((f) => ({ ...f, license_number: e.target.value }))} placeholder="License number" />
             <Input
               label="Years of Experience"
