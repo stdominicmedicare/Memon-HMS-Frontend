@@ -52,7 +52,7 @@ const hospitalIcon = L.divIcon({
   html: '<div style="width:28px;height:28px;border-radius:6px;background:#0d9488;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3)">H</div>',
 });
 
-export default function PatientAmbulanceMap({ onRequestAmbulance, className = 'h-[70vh] min-h-[320px] w-full rounded-lg overflow-hidden border border-border' }) {
+export default function PatientAmbulanceMap({ onRequestAmbulance, className = 'h-[45vh] min-h-[240px] w-full rounded-lg overflow-hidden border border-border sm:h-[70vh] sm:min-h-[320px]' }) {
   const { latitude: myLat, longitude: myLng } = useGeolocation(true);
   const { data: availabilityList = [] } = usePatientAmbulanceAvailability();
   const { trip: activeTrip, location: ambulanceLocation, tripStatus, connectionStatus, locationStale } = usePatientTracking();

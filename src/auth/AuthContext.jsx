@@ -1,21 +1,28 @@
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { useIdleLogout } from '../hooks/useIdleLogout';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const auth = useAuth();
-  
-  // Memoize the context value to prevent unnecessary re-renders
-  const value = useMemo(() => auth, [
-    auth.user?.id, // Only re-render when user ID changes
-    auth.profile?.id, // Or profile ID changes
-    auth.loading, // Or loading state changes
-    auth.error, // Or error changes
-  ]);
+
+  useIdleLogout({
+    enabled: !!auth.user,
+    onIdle: () => {
+      auth.signOut();
+    },
+  });
+
+  // Clear session if profile reports deactivated mid-session
+  useEffect(() => {
+    if (auth.profileError && String(auth.profileError).includes('deactivated')) {
+      auth.signOut();
+    }
+  }, [auth.profileError, auth.signOut]);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={auth}>
       {children}
     </AuthContext.Provider>
   );

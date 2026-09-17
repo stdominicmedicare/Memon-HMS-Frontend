@@ -1,6 +1,6 @@
 /**
- * Doctor Dashboard – Phase 2. Patients list, appointments (accept/reject),
- * medical record creator, prescription creator, ICU/Ambulance stub.
+ * Doctor Dashboard – patients, appointments, medical records, prescriptions,
+ * ICU transfer, doctor-initiated ambulance requests, blood requests.
  */
 import { useState, useEffect } from 'react';
 import {
@@ -78,6 +78,14 @@ export default function DoctorDashboard() {
   const [bloodRequestOpen, setBloodRequestOpen] = useState(false);
   const [bloodRequestForm, setBloodRequestForm] = useState({
     patient_id: '', blood_group_required: 'O+', units_required: 1, urgency_level: 'routine', medical_reason: '',
+  });
+
+  const [ambulanceOpen, setAmbulanceOpen] = useState(false);
+  const [ambulanceForm, setAmbulanceForm] = useState({
+    patient_id: '',
+    from_address: '',
+    to_address: 'Memon Community Hospital',
+    priority: 'High',
   });
 
   const { data: patients = [], isLoading: patientsLoading } = useDoctorPatients();
@@ -174,10 +182,28 @@ export default function DoctorDashboard() {
     }
   };
 
-  const handleEmergencyStub = async (type) => {
+  const handleAmbulanceRequest = async (e) => {
+    e.preventDefault();
+    if (!ambulanceForm.patient_id || !ambulanceForm.from_address || !ambulanceForm.to_address) {
+      setToast({ show: true, message: 'Patient, pickup, and destination are required', type: 'error' });
+      return;
+    }
     try {
-      await emergencyRequest.mutateAsync({ type });
-      setToast({ show: true, message: `${type === 'icu' ? 'ICU' : 'Ambulance'} request logged (stub)` });
+      await emergencyRequest.mutateAsync({
+        type: 'ambulance',
+        patient_id: ambulanceForm.patient_id,
+        from_address: ambulanceForm.from_address,
+        to_address: ambulanceForm.to_address,
+        priority: ambulanceForm.priority,
+      });
+      setToast({ show: true, message: 'Ambulance request submitted' });
+      setAmbulanceOpen(false);
+      setAmbulanceForm({
+        patient_id: '',
+        from_address: '',
+        to_address: 'Memon Community Hospital',
+        priority: 'High',
+      });
     } catch (err) {
       setToast({ show: true, message: err.message || 'Request failed', type: 'error' });
     }
@@ -837,8 +863,11 @@ export default function DoctorDashboard() {
           </Card>
 
           <Card>
-            <p className="text-text-secondary text-sm">Ambulance requests (stub).</p>
-            <Button variant="outline" className="mt-2" onClick={() => handleEmergencyStub('ambulance')} disabled={emergencyRequest.isPending}>
+            <h3 className="font-semibold text-text-primary">Request Ambulance</h3>
+            <p className="mt-1 text-sm text-text-secondary">
+              Create an ambulance trip for a patient. Drivers see it on their dashboard.
+            </p>
+            <Button variant="outline" className="mt-2" onClick={() => setAmbulanceOpen(true)}>
               Request Ambulance
             </Button>
           </Card>
@@ -1017,6 +1046,47 @@ export default function DoctorDashboard() {
             <Button type="button" variant="outline" onClick={() => setPrescriptionModal(false)}>Cancel</Button>
             <Button type="submit" variant="primary" disabled={createPrescription.isPending}>
               {createPrescription.isPending ? 'Saving…' : 'Create'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal open={ambulanceOpen} onClose={() => setAmbulanceOpen(false)} title="Request Ambulance">
+        <form onSubmit={handleAmbulanceRequest} className="space-y-4">
+          <Select
+            label="Patient"
+            options={[{ value: '', label: 'Select patient' }, ...patientOptions]}
+            value={ambulanceForm.patient_id}
+            onChange={(e) => setAmbulanceForm((f) => ({ ...f, patient_id: e.target.value }))}
+            required
+          />
+          <Input
+            label="Pickup address"
+            value={ambulanceForm.from_address}
+            onChange={(e) => setAmbulanceForm((f) => ({ ...f, from_address: e.target.value }))}
+            placeholder="Patient location"
+            required
+          />
+          <Input
+            label="Destination"
+            value={ambulanceForm.to_address}
+            onChange={(e) => setAmbulanceForm((f) => ({ ...f, to_address: e.target.value }))}
+            required
+          />
+          <Select
+            label="Priority"
+            options={[
+              { value: 'High', label: 'High' },
+              { value: 'Medium', label: 'Medium' },
+              { value: 'Low', label: 'Low' },
+            ]}
+            value={ambulanceForm.priority}
+            onChange={(e) => setAmbulanceForm((f) => ({ ...f, priority: e.target.value }))}
+          />
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => setAmbulanceOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="primary" disabled={emergencyRequest.isPending}>
+              {emergencyRequest.isPending ? 'Submitting…' : 'Submit request'}
             </Button>
           </div>
         </form>

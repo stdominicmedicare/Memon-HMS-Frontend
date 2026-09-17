@@ -6,3 +6,6 @@ export { default as AmbulanceManagement } from './AmbulanceManagement';
 export { default as FleetView } from './FleetView';
 export { default as ICUManagement } from './ICUManagement';
 export { default as VolunteerManagement } from './VolunteerManagement';
+export { default as AuditLogs } from './AuditLogs';
+export { default as PatientRecords } from './PatientRecords';
+export { default as Reports } from './Reports';

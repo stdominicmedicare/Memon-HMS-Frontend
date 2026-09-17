@@ -57,7 +57,7 @@ export default function FleetTrackingMap({
   vehicles = [],
   stats,
   onVehicleClick,
-  className = 'h-[60vh] min-h-[400px] w-full rounded-lg overflow-hidden border border-border',
+  className = 'h-[45vh] min-h-[240px] w-full rounded-lg overflow-hidden border border-border sm:h-[60vh] sm:min-h-[400px]',
 }) {
   const [filter, setFilter] = useState(FILTER_ALL);
   const { available, activeTripsCount, returning, offline, maintenance } = stats || {};

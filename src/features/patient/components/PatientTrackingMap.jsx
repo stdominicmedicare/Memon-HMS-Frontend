@@ -32,7 +32,7 @@ export default function PatientTrackingMap({
   ambulanceLocation,
   /** Live status from Realtime (overrides trip.status for route/ETA). */
   tripStatus: tripStatusProp,
-  className = 'h-[70vh] min-h-[320px] w-full rounded-lg overflow-hidden border border-border',
+  className = 'h-[45vh] min-h-[240px] w-full rounded-lg overflow-hidden border border-border sm:h-[70vh] sm:min-h-[320px]',
 }) {
   const fromAddress = trip?.from_address ?? '';
   const toAddress = trip?.to_address ?? '';

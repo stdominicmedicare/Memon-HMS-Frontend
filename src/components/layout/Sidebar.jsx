@@ -1,14 +1,15 @@
 /**
- * Sidebar – role-based menu. Drawer on mobile; always visible on desktop.
- * Active state: primary background (theme).
+ * Sidebar – role-based menu. Drawer on phone/tablet; header nav on large screens.
  */
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../auth/AuthContext';
 import { ROLE_LABELS } from '../../utils/constants';
-import { LayoutDashboard, Users, Shield, Stethoscope, Ambulance, Bed, FileText, Activity, History, Pill, Droplets, MapPin, Heart } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, Stethoscope, Ambulance, Bed, FileText, Activity, History, Pill, Droplets, MapPin, Heart, ScrollText, ShieldCheck, FolderOpen, BarChart3 } from 'lucide-react';
 
 const adminLinks = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/patients', label: 'Patient Records', icon: FolderOpen },
+  { to: '/admin/reports', label: 'Reports & Export', icon: BarChart3 },
   { to: '/admin/users', label: 'User Management', icon: Users },
   { to: '/admin/doctors', label: 'Doctor Management', icon: Stethoscope },
   { to: '/admin/ambulances', label: 'Ambulance Management', icon: Ambulance },
@@ -18,10 +19,16 @@ const adminLinks = [
   { to: '/admin/bloodbank', label: 'Blood Bank', icon: Droplets },
   { to: '/admin/volunteers', label: 'Volunteers', icon: Heart },
   { to: '/admin/roles', label: 'Role Assignment', icon: Shield },
+  { to: '/admin/audit-logs', label: 'Audit Trail', icon: ScrollText },
+  { to: '/admin/security', label: 'Security (2FA)', icon: ShieldCheck },
 ];
 
 const patientLinks = [{ to: '/patient', label: 'Dashboard', icon: LayoutDashboard }];
-const doctorLinks = [{ to: '/doctor', label: 'Dashboard', icon: LayoutDashboard }];
+const doctorLinks = [
+  { to: '/doctor', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/patients', label: 'Patient Records', icon: FolderOpen },
+  { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
+];
 const ambulanceLinks = [{ to: '/ambulance', label: 'Dashboard', icon: LayoutDashboard }];
 
 const icuLinks = [
@@ -35,6 +42,15 @@ const pharmacyLinks = [{ to: '/pharmacy', label: 'Dashboard', icon: Pill }];
 const bloodBankLinks = [{ to: '/bloodbank', label: 'Dashboard', icon: Droplets }];
 const volunteerLinks = [{ to: '/volunteer', label: 'Dashboard', icon: Droplets }];
 const generalUserLinks = [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }];
+const staffLinks = [
+  { to: '/admin/patients', label: 'Patient Records', icon: FolderOpen },
+  { to: '/staff', label: 'Staff Home', icon: LayoutDashboard },
+];
+const recordsOfficerLinks = [
+  { to: '/admin/patients', label: 'Patient Records', icon: FolderOpen },
+  { to: '/admin/reports', label: 'Reports & Export', icon: BarChart3 },
+  { to: '/admin/audit-logs', label: 'Audit Trail', icon: ScrollText },
+];
 
 function getLinksForRole(role) {
   const r = role === 'Blood Bank' ? 'BloodBank' : role;
@@ -47,6 +63,8 @@ function getLinksForRole(role) {
   if (r === 'BloodBank') return bloodBankLinks;
   if (r === 'Volunteer') return volunteerLinks;
   if (r === 'GeneralUser') return generalUserLinks;
+  if (r === 'Nurse' || r === 'Receptionist') return staffLinks;
+  if (r === 'RecordsOfficer') return recordsOfficerLinks;
   return [{ to: '/dashboard', label: 'Home', icon: LayoutDashboard }];
 }
 
@@ -57,7 +75,7 @@ export default function Sidebar({ open, onClose }) {
   return (
     <>
       <div
-        className={`fixed inset-0 z-40 bg-text-primary/50 transition-opacity md:hidden ${
+        className={`fixed inset-0 z-40 bg-text-primary/50 transition-opacity lg:hidden ${
           open ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         onClick={onClose}
@@ -65,7 +83,7 @@ export default function Sidebar({ open, onClose }) {
         aria-hidden="true"
       />
       <aside
-        className={`fixed left-0 top-0 z-50 h-full w-64 border-r border-border bg-surface shadow-card transition-transform md:hidden ${
+        className={`fixed left-0 top-0 z-50 h-full w-[min(16rem,85vw)] max-w-full border-r border-border bg-surface shadow-card transition-transform lg:hidden ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         role="navigation"

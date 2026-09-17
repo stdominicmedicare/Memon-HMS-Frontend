@@ -14,7 +14,7 @@ export default function Footer() {
       className="mt-auto border-t border-white/10"
       style={{ backgroundColor: 'var(--color-header-footer)' }}
     >
-      <div className="mx-auto max-w-8xl px-4 py-10 md:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-2">
@@ -38,6 +38,16 @@ export default function Footer() {
               {role === 'Admin' && (
                 <>
                   <li>
+                    <Link to="/admin/patients" className="text-sm text-white/80 hover:text-white">
+                      Patient Records
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/admin/reports" className="text-sm text-white/80 hover:text-white">
+                      Reports & Export
+                    </Link>
+                  </li>
+                  <li>
                     <Link to="/admin/users" className="text-sm text-white/80 hover:text-white">
                       User Management
                     </Link>
@@ -50,6 +60,16 @@ export default function Footer() {
                   <li>
                     <Link to="/admin/roles" className="text-sm text-white/80 hover:text-white">
                       Role Assignment
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/admin/audit-logs" className="text-sm text-white/80 hover:text-white">
+                      Audit Trail
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/admin/security" className="text-sm text-white/80 hover:text-white">
+                      Security (2FA)
                     </Link>
                   </li>
                 </>

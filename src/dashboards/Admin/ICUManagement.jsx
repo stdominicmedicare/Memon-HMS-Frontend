@@ -251,9 +251,14 @@ export default function ICUManagement() {
             <div className="flex flex-wrap gap-4">
               <div className="rounded-card border border-border bg-surface-muted/50 px-4 py-3">
                 <p className="text-sm text-text-secondary">Utilization</p>
-                <p className="text-xl font-bold text-text-primary">
-                  Total: {analytics.utilization?.total ?? 0} · Available: {analytics.utilization?.available ?? 0} ·
-                  Occupied: {analytics.utilization?.occupied ?? 0} · Occupancy: {analytics.utilization?.occupancyRate ?? 0}%
+                <p className="text-base font-bold text-text-primary sm:text-xl">
+                  <span className="block sm:inline">Total: {analytics.utilization?.total ?? 0}</span>
+                  <span className="hidden sm:inline"> · </span>
+                  <span className="block sm:inline">Available: {analytics.utilization?.available ?? 0}</span>
+                  <span className="hidden sm:inline"> · </span>
+                  <span className="block sm:inline">Occupied: {analytics.utilization?.occupied ?? 0}</span>
+                  <span className="hidden sm:inline"> · </span>
+                  <span className="block sm:inline">Occupancy: {analytics.utilization?.occupancyRate ?? 0}%</span>
                 </p>
               </div>
             </div>
@@ -273,11 +278,11 @@ export default function ICUManagement() {
               <h3 className="flex items-center gap-2 font-semibold text-text-primary">
                 <History className="h-5 w-5" /> ICU Admission History (recent)
               </h3>
-              <div className="mt-2 max-h-64 overflow-y-auto">
+              <div className="mt-2 max-h-64 overflow-x-auto overflow-y-auto">
                 {!analytics.admissionHistory?.length ? (
                   <p className="text-text-muted">No admission records yet.</p>
                 ) : (
-                  <table className="w-full text-sm">
+                  <table className="w-full min-w-[28rem] text-sm">
                     <thead>
                       <tr className="border-b border-border text-text-secondary">
                         <th className="py-2 pr-2 text-left">Patient</th>
